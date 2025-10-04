@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Memes Frontend 🎭
 
-## Getting Started
+Приложение для создания и обмена мемами, созданными с помощью ИИ. Построено на Next.js 15 с использованием MSW для API mocking и Faker.js для генерации тестовых данных.
 
-First, run the development server:
+## 🚀 Быстрый старт
 
 ```bash
+# Установка зависимостей
+npm install
+
+# Запуск dev сервера
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте [http://localhost:3000](http://localhost:3000) в браузере.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ✨ Возможности
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- ✅ **MSW (Mock Service Worker)** - Перехват и мокирование API запросов
+- ✅ **Faker.js** - Генерация реалистичных фейковых данных
+- ✅ **TypeScript** - Полная типизация
+- ✅ **Единая структура API** - Централизованные роуты и клиент
+- ✅ **Next.js 15** - App Router, Server Components
+- ✅ **Tailwind CSS** - Стилизация
 
-## Learn More
+## 📁 Структура проекта
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Next.js app router
+│   ├── layout.tsx         # Root layout с MSW provider
+│   └── page.tsx           # Главная страница
+├── mocks/                 # MSW конфигурация
+│   ├── browser.ts        # MSW worker setup
+│   └── handlers.ts       # API mock handlers
+├── shared/
+│   ├── api/
+│   │   └── client.ts     # API клиент
+│   ├── config/
+│   │   └── routes.ts     # API и app роуты
+│   ├── providers/
+│   │   └── msw-provider.tsx
+│   └── types/
+│       └── meme.ts       # TypeScript типы
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔧 Технологии
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework**: Next.js 15.5.4
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **Mocking**: MSW (Mock Service Worker)
+- **Fake Data**: Faker.js
+- **UI Components**: shadcn/ui (частично)
 
-## Deploy on Vercel
+## 📚 Документация
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Подробная документация по настройке MSW и Faker.js: [MSW_SETUP.md](./MSW_SETUP.md)
+
+### Быстрый пример использования API
+
+```typescript
+import { apiClient } from '@/shared/api/client';
+import { API_ROUTES } from '@/shared/config/routes';
+
+// Получить список мемов
+const memes = await apiClient.get(API_ROUTES.MEMES.LIST, {
+  params: { page: 1, pageSize: 10 }
+});
+
+// Создать новый мем
+const newMeme = await apiClient.post(API_ROUTES.MEMES.CREATE, {
+  title: 'Мой мем',
+  imageUrl: 'https://example.com/image.jpg'
+});
+```
+
+## 🎨 Доступные API эндпоинты (Mock)
+
+- `GET /api/memes` - Список мемов
+- `GET /api/memes/:id` - Мем по ID
+- `POST /api/memes` - Создать мем
+- `PATCH /api/memes/:id` - Обновить мем
+- `DELETE /api/memes/:id` - Удалить мем
+- `POST /api/memes/generate` - Генерация мема с AI
+- `GET /api/users/me` - Текущий пользователь
+
+## 🛠️ Скрипты
+
+```bash
+npm run dev      # Запуск dev сервера с Turbopack
+npm run build    # Сборка для production
+npm run start    # Запуск production сервера
+npm run lint     # Проверка кода с ESLint
+```
+
+## 📖 Дополнительно
+
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+### Полезные ресурсы
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [MSW Documentation](https://mswjs.io/)
+- [Faker.js Documentation](https://fakerjs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+
+## 🚢 Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
