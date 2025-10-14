@@ -9,6 +9,7 @@ import { PlusCircle } from "lucide-react"
 import { loadSearchParams } from "@/lib/search-params"
 import AllMemesCards from "@/components/all-memes-cards"
 import CardsSkeleton from "@/components/cards-skeleton"
+import { getImageDimensions } from "@/lib/utils"
 
 export default async function Home({
 	searchParams,
@@ -17,27 +18,30 @@ export default async function Home({
 }) {
 	const { page, search = "" } = await searchParams
 
-	console.log(page, search)
 	const data = await apiClient.get<MemeListResponse>(API_ROUTES.MEMES.LIST, {
 		params: {
 			page: page || 1,
 			pageSize: 30,
 		},
 	})
+	const transformedData = await getImageDimensions(data, true)
 
 	return (
 		<div className="flex min-h-screen max-w-full flex-col">
 			<header className="bg-background sticky top-0 z-10 flex items-center gap-4 border-b p-2">
 				<SidebarTrigger className="size-12" />
+				<h2 className="text-xl font-bold">Memes</h2>
 				<Input className="flex-1" />
 				<Button>
 					<PlusCircle />
 				</Button>
 			</header>
-			<main className="bg-background relative flex-1 overflow-x-hidden p-4">
-				<h1 className="mb-4 text-2xl font-bold">Memes</h1>
+			<main className="bg-background relative flex-1 overflow-hidden px-4">
 				<Suspense fallback={<CardsSkeleton />}>
-					<AllMemesCards initialData={data} search={search} />
+					<AllMemesCards
+						initialData={transformedData}
+						search={search}
+					/>
 				</Suspense>
 			</main>
 		</div>

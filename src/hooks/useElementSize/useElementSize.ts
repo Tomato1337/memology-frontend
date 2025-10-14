@@ -1,35 +1,35 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react"
 
-import type { HookTarget } from '@/utils/helpers';
+import type { HookTarget } from "@/utils/helpers"
 
-import { getElement } from '@/utils/lib';
+import { getElement } from "@/lib/getElement"
 
-import type { StateRef } from '../useRefState/useRefState';
+import type { StateRef } from "../useRefState/useRefState"
 
-import { useIsomorphicLayoutEffect } from '../useIsomorphicLayoutEffect/useIsomorphicLayoutEffect';
-import { useRefState } from '../useRefState/useRefState';
+import { useIsomorphicLayoutEffect } from "../useIsomorphicLayoutEffect/useIsomorphicLayoutEffect"
+import { useRefState } from "../useRefState/useRefState"
 
 /** The element size value type */
 export interface UseElementSizeValue {
-  /** The element's height */
-  height: number;
-  /** The element's width */
-  width: number;
+	/** The element's height */
+	height: number
+	/** The element's width */
+	width: number
 }
 
 /** The use element size return type */
 export interface UseElementSizeReturn {
-  value: UseElementSizeValue;
+	value: UseElementSizeValue
 }
 
 export interface UseElementSize {
-  (target: HookTarget): UseElementSizeReturn;
+	(target: HookTarget): UseElementSizeReturn
 
-  <Target extends Element>(
-    target?: never
-  ): {
-    ref: StateRef<Target>;
-  } & UseElementSizeReturn;
+	<Target extends Element>(
+		target?: never,
+	): {
+		ref: StateRef<Target>
+	} & UseElementSizeReturn
 }
 
 /**
@@ -52,36 +52,37 @@ export interface UseElementSize {
  * const { ref, value } = useElementSize();
  */
 export const useElementSize = ((...params: any[]) => {
-  const target = params[0] as HookTarget | undefined;
-  const [size, setSize] = useState({ width: 0, height: 0 });
-  const internalRef = useRefState<Element>();
+	const target = params[0] as HookTarget | undefined
+	const [size, setSize] = useState({ width: 0, height: 0 })
+	const internalRef = useRefState<Element>()
 
-  useIsomorphicLayoutEffect(() => {
-    const element = (target ? getElement(target) : internalRef.current) as Element;
+	useEffect(() => {
+		const element = (
+			target ? getElement(target) : internalRef.current
+		) as Element
 
-    if (!element) return;
+		if (!element) return
+		const { width, height } = element.getBoundingClientRect()
+		setSize({
+			width,
+			height,
+		})
 
-    const { width, height } = element.getBoundingClientRect();
-    setSize({
-      width,
-      height
-    });
+		const observer = new ResizeObserver(() => {
+			const { width, height } = element.getBoundingClientRect()
+			setSize({ width, height })
+		})
 
-    const observer = new ResizeObserver(() => {
-      const { width, height } = element.getBoundingClientRect();
-      setSize({ width, height });
-    });
+		observer.observe(element)
 
-    observer.observe(element);
+		return () => {
+			observer.disconnect()
+		}
+	}, [internalRef.current, target])
 
-    return () => {
-      observer.disconnect();
-    };
-  }, [internalRef.current, target]);
-
-  if (target) return { value: size };
-  return {
-    ref: internalRef,
-    value: size
-  };
-}) as UseElementSize;
+	if (target) return { value: size }
+	return {
+		ref: internalRef,
+		value: size,
+	}
+}) as UseElementSize

@@ -29,7 +29,6 @@ export default async function RootLayout({
 		const { server } = await import("@/mocks/server")
 		server.listen({ onUnhandledRequest: "bypass" })
 	}
-	console.log(process.env.NEXT_RUNTIME)
 	return (
 		<html lang="ru">
 			<head>
@@ -47,6 +46,7 @@ export default async function RootLayout({
 				/>
 			</head>
 			<body
+				suppressHydrationWarning
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
 				<Providers>

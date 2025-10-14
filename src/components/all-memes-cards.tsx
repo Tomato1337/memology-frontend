@@ -1,47 +1,38 @@
 "use client"
 
 import useIntersectionObserver from "@/hooks/use-intersection-observer"
-import {
-	useContainerPosition,
-	usePositioner,
-	useResizeObserver,
-	useMasonry,
-	useScroller,
-} from "masonic"
 import { API_ROUTES, apiClient, type MemeListResponse } from "@/shared"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import Image from "next/image"
-import React, { useDeferredValue, useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef } from "react"
 import CardsSkeleton from "./cards-skeleton"
-import { useElementSize, useWindowSize } from "@/hooks"
-import { Masonry } from "react-plock"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { getImageDimensions } from "@/lib/utils"
+import { useElementSize } from "@/hooks"
+
 interface AllMemesCardsProps {
 	initialData: MemeListResponse
 	search: string
 }
 
-const sleep = (time: number) =>
-	new Promise((resolve) => {
-		setTimeout(() => resolve(true), time)
-	})
-
 function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
-	const containerRef = useRef(null)
-	const { data, isFetching, error, fetchNextPage, hasNextPage } =
+	const { data, isFetching, fetchNextPage, hasNextPage } =
 		useInfiniteQuery<MemeListResponse>({
 			queryKey: ["memes", search],
-			queryFn: async ({ pageParam = 1 }) => {
-				// await sleep(3000)
-				return apiClient.get<MemeListResponse>(API_ROUTES.MEMES.LIST, {
-					params: {
-						page: pageParam,
-						pageSize: 30,
-						search,
+			queryFn: async (context) => {
+				const data = await apiClient.get<MemeListResponse>(
+					API_ROUTES.MEMES.LIST,
+					{
+						params: {
+							page: context.pageParam as number,
+							pageSize: 30,
+							search,
+						},
 					},
-				})
+				)
+				const transformedData = await getImageDimensions(data, false)
+				return transformedData
 			},
-			staleTime: 0,
-			gcTime: 0,
 			initialData: {
 				pages: [initialData],
 				pageParams: [1],
@@ -57,77 +48,24 @@ function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
 
 	const allMemes = data ? data.pages.flatMap((page) => page.data) : []
 
-	// const { width: windowWidth, height: windowHeight } = useWindowSize()
-	// const { value } = useElementSize(containerRef)
-	// const [viewContainerSize, setViewContainerSize] = useState<
-	// 	| {
-	// 			elemWidth: number
-	// 			elemHeight: number
-	// 			windowWidth: number
-	// 			windowHeight: number
-	// 	  }
-	// 	| undefined
-	// >()
+	const dividerForInfScroll = useRef<HTMLDivElement>(null)
+	const parentRef = useRef<HTMLDivElement>(null)
+	const { value } = useElementSize(parentRef)
+	const [delayWindowSize, setDelayWindowSize] = React.useState(value)
 
-	// console.log(
-	// 	`Window width = ${windowWidth}; Window height = ${windowHeight} \n\n Elem width = ${value.width}; Elem height = ${value.height}`,
-	// )
+	useEffect(() => {
+		setDelayWindowSize(value)
+	}, [value])
 
-	// useEffect(() => {
-	// 	if (
-	// 		(value && value.width && value.height) ||
-	// 		(windowWidth && windowHeight)
-	// 	) {
-	// 		const timeout = setTimeout(() => {
-	// 			setViewContainerSize({
-	// 				elemWidth: value.width,
-	// 				elemHeight: value.height,
-	// 				windowWidth,
-	// 				windowHeight,
-	// 			})
-	// 		}, 100)
-	// 		return () => clearTimeout(timeout)
-	// 	}
-	// }, [value, windowWidth, windowHeight])
-
-	// const { offset, width } = useContainerPosition(containerRef, [
-	// 	viewContainerSize?.windowHeight,
-	// 	viewContainerSize?.windowWidth,
-	// ])
-
-	// const positioner = usePositioner({
-	// 	width,
-	// 	columnWidth: 400,
-	// 	columnGutter: 8,
-	// })
-
-	// const { scrollTop, isScrolling } = useScroller(offset)
-
-	// const resizeObserver = useResizeObserver(positioner)
-
-	const dividerForInfScroll = useRef(null)
-
-	// const masonryGrid = useMasonry({
-	// 	positioner,
-	// 	resizeObserver,
-	// 	items: allMemes,
-	// 	height: viewContainerSize?.elemHeight || 800,
-	// 	scrollTop,
-	// 	isScrolling,
-	// 	overscanBy: 5,
-	// 	render: ({ data: meme }) => (
-	// 		<div className="content-auto relative cursor-pointer overflow-hidden rounded-2xl shadow-md transition-shadow duration-300 hover:shadow-2xl">
-	// 			<Image
-	// 				src={meme.imageUrl}
-	// 				alt={meme.title}
-	// 				width={320}
-	// 				height={400}
-	// 				sizes="320px"
-	// 				className="h-auto w-full transition-transform duration-300 hover:scale-105"
-	// 			/>
-	// 		</div>
-	// 	),
-	// })
+	const LANES = React.useMemo(() => {
+		const width = delayWindowSize.width || 1200
+		if (width < 640) return 1 // mobile
+		if (width < 768) return 2 // tablet
+		if (width < 1024) return 3 // small desktop
+		if (width < 1280) return 4 // medium desktop
+		if (width < 1536) return 5 // large desktop
+		return 6 // xl desktop (>= 1536px)
+	}, [delayWindowSize.width])
 
 	useIntersectionObserver((entries) => {
 		if (entries[0].isIntersecting && hasNextPage && !isFetching) {
@@ -135,67 +73,91 @@ function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
 		}
 	}, dividerForInfScroll)
 
+	const GAP = 8 // отступ между карточками в пикселях
+	console.log("parentRef =", parentRef.current)
+	const rowVirtualizer = useVirtualizer({
+		count:
+			data?.pages.reduce((acc, page) => acc + page.data.length, 0) || 0,
+		getScrollElement: () => parentRef.current,
+		estimateSize: (i) => {
+			const meme = allMemes[i]
+			if (!meme?.width || !meme?.height) return 400
+			const aspectRatio = meme.width / meme.height
+			const containerWidth = parentRef.current?.clientWidth || 1200
+			const totalGapWidth = GAP * (LANES + 1)
+			const columnWidth = (containerWidth - totalGapWidth) / LANES
+			return columnWidth / aspectRatio + GAP
+		},
+		overscan: 5,
+		lanes: LANES,
+	})
+
+	React.useEffect(() => {
+		rowVirtualizer.measure()
+	}, [LANES, delayWindowSize])
+
 	if (isFetching && !data) {
 		return <CardsSkeleton />
 	}
 
 	return (
-		<>
-			{/* <Masonry
-				items={allMemes}
-				// Adds 8px of space between the grid cells
-				columnGutter={8}
-				// Sets the minimum column width to 172px
-				columnWidth={400}
-				// // Pre-renders 5 windows worth of content
-				// overscanBy={5}
-				render={({ data: meme }) => (
-					<div className="content-auto relative max-h-96 cursor-pointer overflow-hidden rounded-2xl shadow-md transition-shadow duration-300 hover:shadow-2xl">
-						<Image
-							src={meme.imageUrl}
-							alt={meme.title}
-							width={320}
-							height={400}
-							sizes="320px"
-							className="h-auto w-full transition-transform duration-300 hover:scale-105"
-						/>
-					</div>
-				)}
-			/> */}
-			<Masonry
-				items={allMemes}
-				className="gap-2"
-				config={{
-					columns: [1, 2, 3, 4, 5],
-					gap: [24, 12, 6],
-					media: [640, 768, 1024, 1280, 1440],
-					useBalancedLayout: true,
+		<div className="mt-4 h-screen w-full overflow-auto" ref={parentRef}>
+			<div
+				style={{
+					height: `${rowVirtualizer.getTotalSize()}px`,
+					width: "100%",
+					position: "relative",
 				}}
-				render={(meme, idx) => (
-					<div
-						className="content-auto relative mb-2 max-h-96 cursor-pointer overflow-hidden rounded-2xl shadow-md transition-shadow duration-300 hover:shadow-2xl"
-						style={{ containIntrinsicSize: "auto 400px" }}
-					>
-						<Image
-							src={meme.imageUrl}
-							alt={meme.title}
-							width={320}
-							height={400}
-							sizes="320px"
-							className="h-auto w-full transition-transform duration-300 hover:scale-105"
-						/>
-					</div>
-				)}
-			/>
-			{/* <div ref={containerRef}>
-			</div> */}
+			>
+				{rowVirtualizer.getVirtualItems().map((virtualRow) => {
+					const meme = allMemes[virtualRow.index]
+					if (!meme) return null
+
+					const containerWidth =
+						parentRef.current?.clientWidth || 1200
+					const totalGapWidth = GAP * (LANES + 1)
+					const columnWidth = (containerWidth - totalGapWidth) / LANES
+					const aspectRatio = meme.width / meme.height
+					const scaledHeight = columnWidth / aspectRatio
+
+					const leftPosition =
+						GAP + virtualRow.lane * (columnWidth + GAP)
+
+					return (
+						<div
+							key={virtualRow.index}
+							style={{
+								position: "absolute",
+								top: 0,
+								left: `${leftPosition}px`,
+								width: `${columnWidth}px`,
+								height: `${scaledHeight}px`,
+								transform: `translateY(${virtualRow.start}px)`,
+								padding: `0 0 ${GAP}px 0`, // нижний отступ для gap между строками
+							}}
+							className="relative cursor-pointer overflow-hidden rounded-2xl shadow-md transition-shadow duration-300 hover:shadow-2xl"
+						>
+							<div className="h-full w-full">
+								<Image
+									src={meme.imageUrl}
+									alt={meme.title}
+									fill
+									sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+									className="object-cover transition-transform duration-300 hover:scale-105"
+								/>
+							</div>
+						</div>
+					)
+				})}
+			</div>
+
 			{isFetching && hasNextPage && (
 				<div className="mt-4 w-full">
-					<CardsSkeleton />
+					<CardsSkeleton columns={LANES} />
 				</div>
 			)}
 			<div className="h-1 w-full" ref={dividerForInfScroll}></div>
-		</>
+		</div>
 	)
 }
 
