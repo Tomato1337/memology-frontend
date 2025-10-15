@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 
 import type { HookTarget } from "@/utils/helpers"
 
-import { getElement } from "@/lib/getElement"
+import { getElement } from "@/shared/lib/getElement"
 
 import type { StateRef } from "../useRefState/useRefState"
 

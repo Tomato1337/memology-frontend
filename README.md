@@ -16,10 +16,12 @@ npm run dev
 
 ## ✨ Возможности
 
+- ✅ **Типизированный API** - OpenAPI TypeScript схема с автогенерацией
+- ✅ **Гибридный режим** - Auth/Users на реальный бэкенд, остальное через MSW моки
 - ✅ **MSW (Mock Service Worker)** - Перехват и мокирование API запросов
 - ✅ **Faker.js** - Генерация реалистичных фейковых данных
 - ✅ **TypeScript** - Полная типизация
-- ✅ **Единая структура API** - Централизованные роуты и клиент
+- ✅ **React Query** - Умное кэширование и управление состоянием
 - ✅ **Next.js 15** - App Router, Server Components
 - ✅ **Tailwind CSS** - Стилизация
 
@@ -30,18 +32,26 @@ src/
 ├── app/                    # Next.js app router
 │   ├── layout.tsx         # Root layout с MSW provider
 │   └── page.tsx           # Главная страница
-├── mocks/                 # MSW конфигурация
-│   ├── browser.ts        # MSW worker setup
-│   └── handlers.ts       # API mock handlers
 ├── shared/
-│   ├── api/
-│   │   └── client.ts     # API клиент
+│   ├── api/               # 🎯 Типизированный API (OpenAPI)
+│   │   ├── typed-client.ts    # openapi-fetch клиент
+│   │   ├── auth.ts            # Auth API (реальный бэкенд)
+│   │   ├── users.ts           # Users API (реальный бэкенд)
+│   │   ├── hooks.ts           # React Query хуки
+│   │   ├── config.ts          # Гибридная конфигурация
+│   │   ├── api-schema.d.ts    # Автогенерируемые типы
+│   │   └── README.md          # Документация API
 │   ├── config/
-│   │   └── routes.ts     # API и app роуты
-│   ├── providers/
-│   │   └── msw-provider.tsx
+│   │   └── routes.ts      # API и app роуты
+│   ├── mocks/             # MSW конфигурация (только для мемов!)
+│   │   ├── browser.ts    # MSW worker setup
+│   │   └── handlers.ts   # API mock handlers
 │   └── types/
-│       └── meme.ts       # TypeScript типы
+│       └── meme.ts        # TypeScript типы
+├── entities/              # FSD: Бизнес сущности
+├── features/              # FSD: Пользовательские действия
+├── widgets/               # FSD: Композитные блоки
+└── pages/                 # FSD: Страницы
 ```
 
 ## 🔧 Технологии
@@ -55,43 +65,96 @@ src/
 
 ## 📚 Документация
 
-Подробная документация по настройке MSW и Faker.js: [MSW_SETUP.md](./MSW_SETUP.md)
+### API (Типизированный, с OpenAPI)
+
+- 📖 [API README](./src/shared/api/README.md) - Обзор
+- 🚀 [Быстрый старт](./src/shared/api/QUICKSTART.md) - Примеры использования
+- 📘 [Полный гайд](./src/shared/api/HYBRID_API_GUIDE.md) - Гибридный режим
+- 🏗️ [Архитектура](./src/shared/api/ARCHITECTURE.md) - Диаграммы и схемы
+- ✅ [Что готово](./src/shared/api/INTEGRATION_COMPLETE.md) - Статус интеграции
+
+### Остальное
+
+- 🎭 [MSW Setup](./MSW_SETUP.md) - Настройка Mock Service Worker
 
 ### Быстрый пример использования API
 
 ```typescript
-import { apiClient } from '@/shared/api/client';
-import { API_ROUTES } from '@/shared/config/routes';
+// ✅ Новый способ (типизированный, реальный бэкенд)
+import { useLogin, useRegister, useUserProfile } from '@/shared/api'
 
-// Получить список мемов
-const memes = await apiClient.get(API_ROUTES.MEMES.LIST, {
-  params: { page: 1, pageSize: 10 }
-});
+function LoginForm() {
+  const { mutate: login, isPending } = useLogin()
+  
+  const handleSubmit = (credentials) => {
+    login(credentials, {
+      onSuccess: (auth) => console.log("Logged in!", auth.user)
+    })
+  }
+}
 
-// Создать новый мем
-const newMeme = await apiClient.post(API_ROUTES.MEMES.CREATE, {
-  title: 'Мой мем',
-  imageUrl: 'https://example.com/image.jpg'
-});
+function ProfilePage() {
+  const { data: user, isLoading } = useUserProfile()
+  
+  if (isLoading) return <div>Loading...</div>
+  return <div>Hello, {user?.username}</div>
+}
+
+// ⚠️ Старый способ (MSW моки, для мемов)
+import { getMemes } from '@/shared/api/memes';
+
+const memes = await getMemes({ page: 1, pageSize: 10 });
 ```
 
-## 🎨 Доступные API эндпоинты (Mock)
+## 🎨 API эндпоинты
 
+### ✅ Реальный бэкенд (localhost:8080)
+- `POST /auth/login` - Вход
+- `POST /auth/register` - Регистрация
+- `POST /auth/logout` - Выход
+- `POST /auth/refresh` - Обновление токена
+- `GET /users/profile` - Профиль пользователя
+- `PUT /users/profile/update` - Обновление профиля
+- `GET /users/list` - Список пользователей
+- `POST /users/change-password` - Изменение пароля
+
+### 🎭 MSW Моки (localhost:3000)
 - `GET /api/memes` - Список мемов
 - `GET /api/memes/:id` - Мем по ID
 - `POST /api/memes` - Создать мем
 - `PATCH /api/memes/:id` - Обновить мем
 - `DELETE /api/memes/:id` - Удалить мем
 - `POST /api/memes/generate` - Генерация мема с AI
-- `GET /api/users/me` - Текущий пользователь
 
 ## 🛠️ Скрипты
 
 ```bash
-npm run dev      # Запуск dev сервера с Turbopack
-npm run build    # Сборка для production
-npm run start    # Запуск production сервера
-npm run lint     # Проверка кода с ESLint
+npm run dev            # Запуск dev сервера с Turbopack
+npm run build          # Сборка для production
+npm run start          # Запуск production сервера
+npm run lint           # Проверка кода с ESLint
+npm run generate:api   # Обновить OpenAPI схему с бэкенда
+```
+
+## ⚙️ Конфигурация
+
+Скопируйте `.env.example` в `.env.local`:
+
+```bash
+cp .env.example .env.local
+```
+
+Основные переменные:
+
+```env
+# URL реального бэкенда
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# Режим: hybrid (рекомендуется) | mock | real
+NEXT_PUBLIC_API_MODE=hybrid
+
+# Включить MSW моки
+NEXT_PUBLIC_MSW_ENABLED=true
 ```
 
 ## 📖 Дополнительно

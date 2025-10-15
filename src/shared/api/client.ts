@@ -1,7 +1,12 @@
 /**
- * API клиент (фронтенд-слой) для работы поверх канонических типов из `src/shared/api/api-schema.d.ts`.
- * NOTE: Backend не реализуем; используем моки/MSW и тонкую прослойку.
- * MCP: use context7
+ * Legacy API клиент для обратной совместимости
+ *
+ * РЕКОМЕНДАЦИЯ: Используйте типизированный клиент из typed-client.ts
+ * для полной типобезопасности и автокомплита.
+ *
+ * @deprecated Используйте typedApiClient из @/shared/api/typed-client
+ * @see src/shared/api/typed-client.ts
+ * @see src/shared/api/README.md
  */
 
 export interface RequestOptions extends RequestInit {

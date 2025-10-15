@@ -77,7 +77,7 @@ export interface paths {
         put?: never;
         /**
          * Logout user
-         * @description Logout user and invalidate refresh token
+         * @description Logout user and invalidate refresh token from cookies
          */
         post: {
             parameters: {
@@ -86,12 +86,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            /** @description Refresh token */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["handlers.RefreshTokenRequest"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description OK */
                 200: {
@@ -187,7 +182,7 @@ export interface paths {
         put?: never;
         /**
          * Refresh access token
-         * @description Get new access token using refresh token
+         * @description Get new access token using refresh token from cookies
          */
         post: {
             parameters: {
@@ -196,12 +191,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            /** @description Refresh token */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["handlers.RefreshTokenRequest"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description OK */
                 200: {
@@ -561,9 +551,6 @@ export interface components {
         };
         "handlers.MessageResponse": {
             message?: string;
-        };
-        "handlers.RefreshTokenRequest": {
-            refresh_token: string;
         };
         "models.User": {
             avatar_url?: string;
