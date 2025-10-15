@@ -2,11 +2,11 @@ import { userQueries } from "@/entities/user"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
-import { LogOutIcon, User2, User2Icon } from "lucide-react"
+import { LogOutIcon, User2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function UserWidget() {
-	const { data, isLoading, isEnabled, error } = userQueries.useGetUser()
+	const { data, isLoading, error } = userQueries.useGetUser()
 	const navigate = useRouter()
 	const logoutUser = userQueries.useLogoutUser()
 

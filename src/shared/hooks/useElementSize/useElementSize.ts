@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
-import type { HookTarget } from "@/utils/helpers"
+import { HookTarget } from "@/shared/lib/utils/isTarget"
 
-import { getElement } from "@/shared/lib/getElement"
+import { isTarget } from "@/shared/lib/utils/isTarget"
 
-import type { StateRef } from "../useRefState/useRefState"
+import { StateRef } from "../useRefState/useRefState"
 
 import { useIsomorphicLayoutEffect } from "../useIsomorphicLayoutEffect/useIsomorphicLayoutEffect"
 import { useRefState } from "../useRefState/useRefState"
@@ -56,12 +56,13 @@ export const useElementSize = ((...params: any[]) => {
 	const [size, setSize] = useState({ width: 0, height: 0 })
 	const internalRef = useRefState<Element>()
 
-	useEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		const element = (
-			target ? getElement(target) : internalRef.current
+			target ? isTarget.getElement(target) : internalRef.current
 		) as Element
 
 		if (!element) return
+
 		const { width, height } = element.getBoundingClientRect()
 		setSize({
 			width,

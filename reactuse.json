@@ -1,7 +1,7 @@
 {
 	"ts": true,
 	"aliases": {
-		"hooks": "@/hooks",
-		"utils": "@/lib"
+		"hooks": "@/shared/hooks",
+		"utils": "@/shared/lib/utils"
 	}
 }

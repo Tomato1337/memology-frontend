@@ -2,8 +2,7 @@
 
 import { Button } from "@/shared/ui/button"
 import { Field, FieldError, FieldGroup } from "@/shared/ui/field"
-import { Checkbox } from "@/shared/ui/checkbox"
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import InputLabel from "@/shared/ui/inputLabel"
 import { useRegister } from "../api/useRegister"
@@ -19,7 +18,6 @@ export default function RegisterPage() {
 	const {
 		register,
 		handleSubmit,
-		control,
 		formState: { errors, dirtyFields },
 	} = useForm<RegisterForm>({
 		resolver: zodResolver(registerSchema),

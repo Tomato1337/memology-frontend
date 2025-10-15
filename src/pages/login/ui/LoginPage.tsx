@@ -2,11 +2,10 @@
 
 import { Button } from "@/shared/ui/button"
 import { Field, FieldError, FieldGroup } from "@/shared/ui/field"
-import { Checkbox } from "@/shared/ui/checkbox"
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import InputLabel from "@/shared/ui/inputLabel"
-import { useLogin, useRegister } from "../api/useLogin"
+import { useLogin } from "../api/useLogin"
 import { customToast } from "@/shared/lib/utils"
 import { LoginForm, loginSchema } from "../model/login.model"
 import { useRouter } from "next/navigation"
@@ -19,7 +18,6 @@ export default function LoginPage() {
 	const {
 		register,
 		handleSubmit,
-		control,
 		formState: { errors, dirtyFields },
 	} = useForm<LoginForm>({
 		resolver: zodResolver(loginSchema),
@@ -32,15 +30,10 @@ export default function LoginPage() {
 	const mutateLogin = useLogin()
 
 	const onSubmit = (data: LoginForm) => {
-		console.log("✅ Form submitted with data:", data)
-		
 		const fetchData = {
 			username: data.emailOrUsername,
 			password: data.password,
 		}
-		
-		console.log("🚀 Calling login mutation with:", fetchData)
-		
 		mutateLogin.mutate(fetchData, {
 			onSuccess: (data) => {
 				customToast("Login successful!", "success")
@@ -56,9 +49,6 @@ export default function LoginPage() {
 			},
 		})
 	}
-
-	// Отладка
-	console.log("🔍 LoginPage rendered, mutateLogin.isPending:", mutateLogin.isPending)
 
 	console.log(dirtyFields)
 
@@ -81,7 +71,6 @@ export default function LoginPage() {
 					<form
 						onSubmit={handleSubmit(onSubmit)}
 						className="space-y-6"
-						noValidate
 					>
 						<FieldGroup className="gap-4">
 							<Field data-invalid={!!errors.emailOrUsername}>

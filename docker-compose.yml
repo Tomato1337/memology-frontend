@@ -38,18 +38,3 @@ services:
             timeout: 10s
             retries: 3
             start_period: 40s
-
-        # Resource limits (опционально)
-        deploy:
-            resources:
-                limits:
-                    cpus: "1"
-                    memory: 1G
-                reservations:
-                    cpus: "0.5"
-                    memory: 512M
-
-# Optional: если нужна отдельная сеть
-networks:
-    default:
-        name: ai-memes-network

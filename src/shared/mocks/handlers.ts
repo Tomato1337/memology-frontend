@@ -170,7 +170,7 @@ export const handlers = [
 				{ status: 404 },
 			)
 		}
-
+		// @ts-ignore
 		memes[memeIndex] = {
 			...memes[memeIndex],
 			...data,

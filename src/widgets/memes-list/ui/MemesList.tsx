@@ -1,6 +1,6 @@
 "use client"
 
-import useIntersectionObserver from "@/hooks/use-intersection-observer"
+import useIntersectionObserver from "@/shared/hooks/use-intersection-observer"
 import { apiClient } from "@/shared/api/client"
 import { API_ROUTES } from "@/shared/config/routes"
 import type { MemeListResponse } from "@/entities/meme/model/meme.types"
@@ -9,8 +9,8 @@ import Image from "next/image"
 import React, { useEffect, useRef } from "react"
 import CardsSkeleton from "@/widgets/memes-list/ui/cards-skeleton"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { useElementSize } from "@/hooks"
 import { getImageDimensions } from "@/shared/lib/utils"
+import { useElementSize } from "@/shared/hooks"
 
 interface MemesListProps {
 	initialData: MemeListResponse

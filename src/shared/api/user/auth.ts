@@ -9,8 +9,6 @@ import type { components } from "../api-schema"
 export type AuthResponse = components["schemas"]["services.AuthResponse"]
 export type LoginRequest = components["schemas"]["services.LoginRequest"]
 export type RegisterRequest = components["schemas"]["services.RegisterRequest"]
-export type RefreshTokenRequest =
-	components["schemas"]["handlers.RefreshTokenRequest"]
 
 /**
  * Регистрация нового пользователя
@@ -92,8 +90,6 @@ export async function logoutAllDevices() {
  *   console.log("New access token:", result.data.access_token)
  * }
  */
-export async function refreshAccessToken(data: RefreshTokenRequest) {
-	return await typedApiClient.POST("/auth/refresh", {
-		body: data,
-	})
+export async function refreshAccessToken() {
+	return await typedApiClient.POST("/auth/refresh")
 }
