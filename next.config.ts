@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
                 hostname: '**',
             },
         ],
+        // ✅ Отключаем оптимизацию для dev режима (ускоряет разработку)
+        unoptimized: process.env.NODE_ENV === 'development',
     },
 }
 

@@ -7,7 +7,6 @@ import Image from "next/image"
 import React, { useEffect, useRef } from "react"
 import CardsSkeleton from "./cards-skeleton"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { getImageDimensions } from "@/lib/utils"
 import { useElementSize } from "@/hooks"
 
 interface AllMemesCardsProps {
@@ -16,22 +15,26 @@ interface AllMemesCardsProps {
 }
 
 function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
-	const { data, isFetching, fetchNextPage, hasNextPage } =
+	const { data, isFetching, isLoading, fetchNextPage, hasNextPage } =
 		useInfiniteQuery<MemeListResponse>({
 			queryKey: ["memes", search],
 			queryFn: async (context) => {
+				const signal = context.signal
+
 				const data = await apiClient.get<MemeListResponse>(
 					API_ROUTES.MEMES.LIST,
 					{
 						params: {
 							page: context.pageParam as number,
 							pageSize: 30,
-							search,
+							...(search && { search }),
 						},
+						signal,
 					},
 				)
-				const transformedData = await getImageDimensions(data, false)
-				return transformedData
+				
+				// ✅ Возвращаем данные БЕЗ getImageDimensions
+				return data
 			},
 			initialData: {
 				pages: [initialData],
@@ -68,7 +71,8 @@ function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
 	}, [delayWindowSize.width])
 
 	useIntersectionObserver((entries) => {
-		if (entries[0].isIntersecting && hasNextPage && !isFetching) {
+		const entry = entries[0]
+		if (entry?.isIntersecting && hasNextPage && !isFetching) {
 			fetchNextPage()
 		}
 	}, dividerForInfScroll)
@@ -79,7 +83,7 @@ function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
 		count:
 			data?.pages.reduce((acc, page) => acc + page.data.length, 0) || 0,
 		getScrollElement: () => parentRef.current,
-		estimateSize: (i) => {
+		estimateSize: (i: number) => {
 			const meme = allMemes[i]
 			if (!meme?.width || !meme?.height) return 400
 			const aspectRatio = meme.width / meme.height
@@ -99,6 +103,7 @@ function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
 	if (isFetching && !data) {
 		return <CardsSkeleton />
 	}
+	console.log(data, isFetching, isLoading)
 
 	return (
 		<div className="mt-4 h-screen w-full overflow-auto" ref={parentRef}>
@@ -109,7 +114,7 @@ function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
 					position: "relative",
 				}}
 			>
-				{rowVirtualizer.getVirtualItems().map((virtualRow) => {
+				{rowVirtualizer.getVirtualItems().map((virtualRow: any) => {
 					const meme = allMemes[virtualRow.index]
 					if (!meme) return null
 
@@ -144,6 +149,10 @@ function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
 									fill
 									sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
 									className="object-cover transition-transform duration-300 hover:scale-105"
+									// ✅ Первые 6 картинок (первый экран) загружаем сразу
+									priority={virtualRow.index < 6}
+									loading={virtualRow.index < 6 ? undefined : "lazy"}
+									unoptimized
 								/>
 							</div>
 						</div>
@@ -151,7 +160,7 @@ function AllMemesCards({ initialData, search }: AllMemesCardsProps) {
 				})}
 			</div>
 
-			{isFetching && hasNextPage && (
+			{((isFetching && hasNextPage) || isLoading) && (
 				<div className="mt-4 w-full">
 					<CardsSkeleton columns={LANES} />
 				</div>
