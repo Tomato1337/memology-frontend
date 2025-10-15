@@ -1,0 +1,32 @@
+name: Frontend MemoLogy Auto-Deploy
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    deploy:
+        name: Deploy Frontend to Server
+        runs-on: ubuntu-latest
+        steps:
+            - name: Deploy to Server
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      set -e
+
+                      if [ ! -d "$HOME/memology-frontend" ]; then
+                        cd $HOME
+                        git clone https://github.com/Tomato1337/memology-frontend.git
+                      fi
+
+                      cd $HOME/memology-frontend
+                      git fetch origin main
+                      git reset --hard origin/main
+                      docker compose down
+                      docker compose build
+                      docker compose up -d

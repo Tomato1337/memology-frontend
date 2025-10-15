@@ -8,7 +8,13 @@
 		"start": "next start",
 		"lint": "eslint",
 		"generate:api": "openapi-typescript http://213.165.42.243:8082/openapi.json -o src/shared/api/api-schema.d.ts",
-		"generate:api:file": "openapi-typescript ./openapi.yaml -o src/shared/api/api-schema.d.ts"
+		"generate:api:file": "openapi-typescript ./openapi.yaml -o src/shared/api/api-schema.d.ts",
+		"docker:build": "docker-compose build",
+		"docker:up": "docker-compose up -d",
+		"docker:down": "docker-compose down",
+		"docker:logs": "docker-compose logs -f",
+		"docker:restart": "docker-compose restart",
+		"docker:deploy": "docker-compose down && docker-compose build --no-cache && docker-compose up -d"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.2",

@@ -10,6 +10,9 @@
 !.yarn/releases
 !.yarn/versions
 
+# bun
+.bun
+
 .github/prompts
 # testing
 /coverage
@@ -31,8 +34,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files (НЕ коммитим секреты, но коммитим .env.production.example)
+.env
+.env*.local
+.env.production
+
+# НО коммитим примеры
+!.env.production.example
 
 # vercel
 .vercel

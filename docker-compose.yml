@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+    frontend:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                # URL бэкенда для сборки
+                NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://213.165.42.243:8082/api/v1}
+
+        image: ai-memes-frontend:latest
+
+        container_name: ai-memes-frontend
+
+        ports:
+            - "3030:3000"
+
+        environment:
+            # Runtime переменные окружения
+            - NODE_ENV=production
+            - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://213.165.42.243:8082/api/v1}
+            - NEXT_PUBLIC_API_MODE=${NEXT_PUBLIC_API_MODE:-real}
+            - NEXT_PUBLIC_MSW_ENABLED=false
+
+        restart: unless-stopped
+
+        # Healthcheck
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "node",
+                    "-e",
+                    "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode === 200 ? 0 : 1))",
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+
+        # Resource limits (опционально)
+        deploy:
+            resources:
+                limits:
+                    cpus: "1"
+                    memory: 1G
+                reservations:
+                    cpus: "0.5"
+                    memory: 512M
+
+# Optional: если нужна отдельная сеть
+networks:
+    default:
+        name: ai-memes-network
