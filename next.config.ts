@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
 		return [
 			{
 				source: "/api/v1/:path*",
-				destination: "http://213.165.42.243:8082/api/v1/:path*",
+				destination: "https://memology.pixel-team.ru/api/v1/:path*",
 			},
 		]
 	},

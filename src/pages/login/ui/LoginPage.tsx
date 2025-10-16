@@ -40,13 +40,6 @@ export default function LoginPage() {
 				console.log("Login success:", data)
 				navigate.replace("/")
 			},
-			onError: (error) => {
-				console.error("Login error:", error)
-				customToast(
-					`Login failed. Please check your credentials and try again. ${error.message}`,
-					"error",
-				)
-			},
 		})
 	}
 

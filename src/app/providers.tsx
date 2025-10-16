@@ -14,7 +14,6 @@ import { Toaster } from "@/shared/ui/sonner"
 import { customToast } from "@/shared/lib/utils"
 
 export function Providers({ children }: { children: React.ReactNode }) {
-	// Создаём QueryClient внутри клиентского компонента
 	const [queryClient] = useState(
 		() =>
 			new QueryClient({
@@ -28,7 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 							return
 						}
 
-						// 2. Не показываем ошибки для запроса user (его обрабатываем локально)
+						// 2. Не показываем ошибки для запроса user (его обрабатываем локально для авторизации)
 						if (query.queryKey[0] === "user") {
 							return
 						}
@@ -47,6 +46,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 				defaultOptions: {
 					queries: {
 						staleTime: 60 * 1000, // 1 минута
+						refetchOnWindowFocus: false,
+						retry: 2, // Повторять неудачные запросы 1 раз
 					},
 				},
 			}),

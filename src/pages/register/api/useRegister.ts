@@ -7,16 +7,20 @@ export const useRegister = () => {
 	return useMutation({
 		mutationKey: ["register"],
 		mutationFn: async (body: RegisterRequest) => {
-			const { data } = await registerUser(body)
+			const { data, error } = await registerUser(body)
+
+			if (error) {
+				throw new Error(
+					error.error || "Login failed. Please try again.",
+				)
+			}
+
 			return data
 		},
 		onSuccess: (authResponse) => {
 			// Сохраняем данные пользователя в кэш
 			if (authResponse?.user) {
 				queryClient.setQueryData(["user"], authResponse.user)
-			}
-			if (authResponse?.access_token) {
-				localStorage.setItem("access_token", authResponse.access_token)
 			}
 		},
 	})

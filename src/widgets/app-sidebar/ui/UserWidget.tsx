@@ -1,4 +1,5 @@
 import { userQueries } from "@/entities/user"
+import { customToast } from "@/shared/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
@@ -35,7 +36,11 @@ export default function UserWidget() {
 			)}
 			<LogOutIcon
 				onClick={() => {
-					logoutUser.mutate()
+					logoutUser.mutate(void 0, {
+						onSuccess: () => {
+							customToast("Logged out successfully", "success")
+						},
+					})
 				}}
 				className="block size-6 flex-shrink-0 cursor-pointer text-white"
 			/>

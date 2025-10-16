@@ -7,7 +7,14 @@ export const useLogin = () => {
 	return useMutation({
 		mutationKey: ["login"],
 		mutationFn: async (body: LoginRequest) => {
-			const { data } = await loginUser(body)
+			const { data, error } = await loginUser(body)
+
+			if (error) {
+				throw new Error(
+					error.error || "Login failed. Please try again.",
+				)
+			}
+
 			return data
 		},
 		onSuccess: (authResponse) => {
