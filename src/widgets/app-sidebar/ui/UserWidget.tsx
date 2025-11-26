@@ -46,6 +46,8 @@ export default function UserWidget() {
 					logoutUser.mutate(void 0, {
 						onSuccess: () => {
 							customToast("Logged out successfully", "success")
+							navigate.push("/auth/login")
+							navigate.refresh()
 						},
 					})
 				}}

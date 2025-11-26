@@ -37,6 +37,7 @@ export default function RegisterPage() {
 				customToast("Registration successful!", "success")
 				console.log("Register success:", data)
 				navigate.replace("/")
+				navigate.refresh()
 			},
 		})
 	}

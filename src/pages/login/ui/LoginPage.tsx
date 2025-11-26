@@ -39,6 +39,7 @@ export default function LoginPage() {
 				customToast("Login successful!", "success")
 				console.log("Login success:", data)
 				navigate.replace("/")
+				navigate.refresh()
 			},
 		})
 	}

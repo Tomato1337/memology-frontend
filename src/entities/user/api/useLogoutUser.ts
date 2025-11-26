@@ -11,7 +11,6 @@ export const useLogoutUser = () => {
 			return data
 		},
 		onSuccess: () => {
-			// Очищаем кэш пользователя при выходе
 			queryClient.removeQueries({ queryKey: ["user"] })
 		},
 	})
