@@ -13,6 +13,7 @@ interface MemeCardProps {
 export function MemeCard({ meme, onClick }: MemeCardProps) {
 	const isProcessing =
 		meme.status.toLowerCase() === "pending" ||
+		meme.status.toLowerCase() === "started" ||
 		meme.status.toLowerCase() === "processing"
 	const isFailed = meme.status.toLowerCase() === "failed"
 

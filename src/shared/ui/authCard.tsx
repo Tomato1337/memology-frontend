@@ -16,11 +16,16 @@ export default function AuthCard({
 				},
 			)}
 		>
-			<Card className="bg-background flex min-h-[50vh] w-full max-w-md flex-col justify-between gap-3 rounded-3xl border-3 p-4 text-white">
+			<Card
+				className="bg-background flex w-full max-w-md flex-col justify-between gap-3 rounded-3xl border-3 p-4 text-white"
+				style={{
+					width: "clamp(200px, 50vh, 500px)",
+				}}
+			>
 				<div className="from-primary to-secondary-foreground dark:from-primary dark:to-secondary flex h-full flex-3 flex-col justify-end rounded-2xl bg-gradient-to-br p-4 dark:border">
 					{/* <CircleIcon className="size-20" /> */}
 					<div className="space-y-6">
-						<h2 className="font-pixelify-sans text-5xl font-normal tracking-widest">
+						<h2 className="font-pixelify-sans text-4xl font-normal tracking-widest md:text-5xl">
 							Думай
 							<br />
 							Генерируй

@@ -54,7 +54,6 @@ export const MemeCard = ({
 						className="object-cover transition-transform duration-300 group-hover:scale-105"
 						priority={virtualRow.index < 6}
 						loading={virtualRow.index < 6 ? undefined : "lazy"}
-						unoptimized
 						onError={() => setImageError(true)}
 					/>
 				</div>

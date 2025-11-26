@@ -10,7 +10,6 @@ export function middleware(request: NextRequest) {
 
 	const token =
 		request.cookies.get("access_token")?.value ||
-		request.cookies.get("refresh_token")?.value ||
 		request.headers.get("Authorization")?.split("Bearer ")[1]
 
 	if (privateRoutes.some((route) => pathname.startsWith(route)) && !token) {
