@@ -1,18 +1,14 @@
 import { z } from "zod"
 
 export const envSchema = z.object({
-	NEXT_PUBLIC_API_MODE: z.enum(["mock", "hybrid", "real"]).default("hybrid"),
-	NEXT_PUBLIC_API_URL: z.url(),
-	NEXT_PUBLIC_MSW_ENABLED: z.enum(["true", "false"]).default("true"),
+	NEXT_PUBLIC_API_URL: z.string().default("http://localhost:3000/api/v1"),
 })
 
 export type Env = z.infer<typeof envSchema>
 
 function validateEnv(): Env {
 	const config = {
-		NEXT_PUBLIC_API_MODE: process.env.NEXT_PUBLIC_API_MODE,
 		NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-		NEXT_PUBLIC_MSW_ENABLED: process.env.NEXT_PUBLIC_MSW_ENABLED,
 	}
 
 	try {

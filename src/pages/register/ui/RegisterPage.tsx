@@ -48,12 +48,11 @@ export default function RegisterPage() {
 			<div className="flex flex-1 items-center justify-center p-6 lg:justify-end lg:p-12">
 				<div className="w-full max-w-md space-y-8">
 					<div className="space-y-2 text-center">
-						<h1 className="font-pixelify-sans text-4xl font-bold">
+						<h1 className="font-pixelify text-4xl font-bold">
 							Create Account
 						</h1>
 						<p className="text-muted-foreground font-montserrat">
-							Join medidash and start managing your health
-							documents
+							Join AI Meme Generator and start creating
 						</p>
 					</div>
 
@@ -69,7 +68,7 @@ export default function RegisterPage() {
 										placeholder=" "
 										aria-invalid={!!errors.username}
 										className="peer pt-6"
-										label="Full Name"
+										label="Username"
 										{...register("username")}
 									/>
 								</div>

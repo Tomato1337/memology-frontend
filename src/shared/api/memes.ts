@@ -1,167 +1,89 @@
 /**
- * Примеры использования API клиента
- *
- * Этот файл содержит функции-обёртки для работы с API мемов
+ * API методы для работы с мемами
+ * Использует типизированный клиент из typed-client.ts
  */
 
-import { apiClient, ApiError } from "@/shared/api/client"
-import { API_ROUTES } from "@/shared/config/routes"
-import type {
-	Meme,
-	MemeListResponse,
-	CreateMemeDto,
-	UpdateMemeDto,
-	GenerateMemeDto,
-} from "@/entities/meme/model/meme.types"
+import { typedApiClient } from "./typed-client"
 
 /**
- * Получить список мемов с пагинацией и поиском
+ * Получить список мемов текущего пользователя
  */
-export async function getMemes(params?: {
-	page?: number
-	pageSize?: number
-	search?: string
-}) {
-	try {
-		return await apiClient.get<MemeListResponse>(API_ROUTES.MEMES.LIST, {
-			params: {
-				page: params?.page || 1,
-				pageSize: params?.pageSize || 10,
-				...(params?.search && { search: params.search }),
-			},
-		})
-	} catch (error) {
-		if (error instanceof ApiError) {
-			console.error("API Error:", error.message, error.status)
-		}
-		throw error
-	}
+export async function getMyMemes(params?: { limit?: number; offset?: number }) {
+	const { data, error } = await typedApiClient.GET("/memes/my", {
+		params: {
+			query: params,
+		},
+	})
+
+	if (error) throw new Error(error.error || "Failed to fetch user memes")
+
+	return data
 }
 
 /**
  * Получить мем по ID
  */
 export async function getMemeById(id: string) {
-	try {
-		return await apiClient.get<Meme>(API_ROUTES.MEMES.DETAIL(id))
-	} catch (error) {
-		if (error instanceof ApiError) {
-			if (error.status === 404) {
-				throw new Error("Мем не найден")
-			}
-		}
-		throw error
-	}
+	const { data, error } = await typedApiClient.GET("/memes/{id}", {
+		params: {
+			path: { id },
+		},
+	})
+
+	if (error) throw new Error(error.error || "Failed to fetch meme")
+	return data
 }
 
 /**
- * Создать новый мем
+ * Генерация мема через нейросеть
  */
-export async function createMeme(data: CreateMemeDto) {
-	try {
-		return await apiClient.post<Meme>(API_ROUTES.MEMES.CREATE, data)
-	} catch (error) {
-		if (error instanceof ApiError) {
-			console.error("Ошибка создания мема:", error.message)
-		}
-		throw error
-	}
+export async function generateMeme(params: {
+	prompt: string
+	style?: string
+	is_public?: boolean
+}) {
+	const { data, error } = await typedApiClient.POST("/memes/generate", {
+		body: params,
+	})
+
+	if (error) throw new Error(error.error || "Failed to generate meme")
+	return data
 }
 
 /**
- * Обновить существующий мем
+ * Проверить статус генерации мема
  */
-export async function updateMeme(id: string, data: UpdateMemeDto) {
-	try {
-		return await apiClient.patch<Meme>(API_ROUTES.MEMES.UPDATE(id), data)
-	} catch (error) {
-		if (error instanceof ApiError) {
-			if (error.status === 404) {
-				throw new Error("Мем не найден")
-			}
-		}
-		throw error
-	}
+export async function getMemeStatus(id: string) {
+	const { data, error } = await typedApiClient.GET("/memes/{id}/status", {
+		params: {
+			path: { id },
+		},
+	})
+
+	if (error) throw new Error(error.error || "Failed to get meme status")
+	return data
+}
+
+/**
+ * Получить доступные стили для генерации
+ */
+export async function getAvailableStyles() {
+	const { data, error } = await typedApiClient.GET("/memes/styles")
+
+	if (error) throw new Error(error.error || "Failed to fetch styles")
+	return data
 }
 
 /**
  * Удалить мем
  */
 export async function deleteMeme(id: string) {
-	try {
-		await apiClient.delete(API_ROUTES.MEMES.DELETE(id))
-	} catch (error) {
-		if (error instanceof ApiError) {
-			if (error.status === 404) {
-				throw new Error("Мем не найден")
-			}
-		}
-		throw error
-	}
-}
+	const { data, error } = await typedApiClient.DELETE("/memes/{id}", {
+		params: {
+			path: { id },
+		},
+	})
 
-/**
- * Генерация мема с помощью AI
- */
-export async function generateMeme(data: GenerateMemeDto) {
-	try {
-		return await apiClient.post<Meme>(API_ROUTES.MEMES.GENERATE, data)
-	} catch (error) {
-		if (error instanceof ApiError) {
-			console.error("Ошибка генерации мема:", error.message)
-		}
-		throw error
-	}
-}
-
-/**
- * Получить текущего пользователя
- */
-export async function getCurrentUser() {
-	try {
-		return await apiClient.get(API_ROUTES.USERS.ME)
-	} catch (error) {
-		if (error instanceof ApiError) {
-			if (error.status === 401) {
-				throw new Error("Не авторизован")
-			}
-		}
-		throw error
-	}
-}
-
-/**
- * Пример использования с обработкой ошибок
- */
-export async function fetchMemesWithErrorHandling() {
-	try {
-		const memes = await getMemes({ page: 1, pageSize: 10 })
-		return { success: true, data: memes }
-	} catch (error) {
-		return {
-			success: false,
-			error:
-				error instanceof Error ? error.message : "Неизвестная ошибка",
-		}
-	}
-}
-
-/**
- * Пример пакетной загрузки мемов
- */
-export async function fetchMultiplePages(totalPages: number) {
-	const promises = Array.from({ length: totalPages }, (_, i) =>
-		getMemes({ page: i + 1, pageSize: 10 }),
-	)
-
-	try {
-		const results = await Promise.all(promises)
-		const allMemes = results.flatMap((result) => result.data)
-		return { success: true, memes: allMemes }
-	} catch (error) {
-		return {
-			success: false,
-			error: error instanceof Error ? error.message : "Ошибка загрузки",
-		}
-	}
+	if (error) throw new Error(error.error || "Failed to delete meme")
+	return data
 }

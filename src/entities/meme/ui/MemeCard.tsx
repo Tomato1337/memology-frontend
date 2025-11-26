@@ -1,62 +1,64 @@
-import type { Meme } from "@/entities/meme/model/meme.types"
+import { Card, CardContent, CardFooter } from "@/shared/ui/card"
+import Image from "next/image"
+import { formatDistanceToNow } from "date-fns"
+import { ru } from "date-fns/locale"
+import { Badge } from "@/shared/ui/badge"
+import { IMemeDTO } from "../model/types"
 
 interface MemeCardProps {
-	meme: Meme
-	onClick?: () => void
+	meme: IMemeDTO
+	onClick?: (meme: IMemeDTO) => void
 }
 
-/**
- * MemeCard Entity - displays a single meme with metadata
- * FSD Layer: entities/meme
- */
 export function MemeCard({ meme, onClick }: MemeCardProps) {
+	const isProcessing =
+		meme.status.toLowerCase() === "pending" ||
+		meme.status.toLowerCase() === "processing"
+	const isFailed = meme.status.toLowerCase() === "failed"
+
 	return (
-		<div
-			onClick={onClick}
-			className="cursor-pointer overflow-hidden rounded-xl bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl dark:bg-gray-800"
+		<Card
+			className="cursor-pointer overflow-hidden transition-shadow hover:shadow-lg"
+			onClick={() => onClick?.(meme)}
 		>
-			<div className="relative aspect-video bg-gray-200 dark:bg-gray-700">
-				<div className="absolute inset-0 flex items-center justify-center text-gray-400">
-					🖼️ {meme.title}
-				</div>
-			</div>
-
-			<div className="p-4">
-				<h3 className="mb-2 line-clamp-1 text-lg font-bold text-gray-800 dark:text-white">
-					{meme.title}
-				</h3>
-
-				{meme.description && (
-					<p className="mb-3 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
-						{meme.description}
-					</p>
+			<CardContent className="relative aspect-square p-0">
+				{meme.imageUrl && meme.status === "completed" ? (
+					<Image
+						src={meme.imageUrl}
+						alt={meme.title || "Meme"}
+						fill
+						className="object-cover"
+						sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+					/>
+				) : (
+					<div className="bg-muted flex h-full w-full items-center justify-center">
+						<Badge variant={isFailed ? "destructive" : "secondary"}>
+							{isProcessing ? "Генерация..." : "Ошибка"}
+						</Badge>
+					</div>
 				)}
-
-				<div className="mb-3 flex items-center gap-2">
-					<span className="text-2xl">
-						{meme.author.avatar ? "👤" : "🤖"}
-					</span>
-					<span className="text-sm text-gray-600 dark:text-gray-400">
-						{meme.author.name}
-					</span>
+			</CardContent>
+			<CardFooter className="flex flex-col items-start gap-2 p-4">
+				<p className="font-montserrat line-clamp-2 text-sm font-medium">
+					{meme.title || "Без текста"}
+				</p>
+				<div className="flex w-full items-center justify-between">
+					<p className="text-muted-foreground font-montserrat text-xs">
+						{formatDistanceToNow(
+							new Date(meme.createdAt || new Date()),
+							{
+								addSuffix: true,
+								locale: ru,
+							},
+						)}
+					</p>
+					{meme.style && (
+						<Badge variant="outline" className="text-xs">
+							{meme.style}
+						</Badge>
+					)}
 				</div>
-
-				<div className="mb-3 flex flex-wrap gap-2">
-					{meme.tags.map((tag) => (
-						<span
-							key={tag}
-							className="rounded-full bg-purple-100 px-2 py-1 text-xs text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-						>
-							#{tag}
-						</span>
-					))}
-				</div>
-
-				<div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
-					<span>❤️ {meme.likes.toLocaleString()}</span>
-					<span>👁️ {meme.views.toLocaleString()}</span>
-				</div>
-			</div>
-		</div>
+			</CardFooter>
+		</Card>
 	)
 }

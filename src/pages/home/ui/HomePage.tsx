@@ -1,8 +1,6 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
-import { apiClient } from "@/shared/api/client"
-import { API_ROUTES } from "@/shared/config/routes"
-import type { MemeListResponse } from "@/entities/meme/model/meme.types"
+import { typedApiClient } from "@/shared/api/typed-client"
 import { SidebarTrigger } from "@/shared/ui/sidebar"
 import { Button } from "@/shared/ui/button"
 import { PlusCircle } from "lucide-react"
@@ -11,7 +9,8 @@ import { MemesList } from "@/widgets/memes-list"
 import CardsSkeleton from "@/widgets/memes-list/ui/cards-skeleton"
 import { SearchInput } from "@/features/search-memes"
 import type { SearchParams } from "nuqs/server"
-import { getImageDimensions } from "@/shared/lib/utils"
+import Link from "next/link"
+import { MemesListDTO } from "@/entities/meme/model/dto"
 
 export const metadata: Metadata = {
 	title: "Мемы - AI Memes",
@@ -21,16 +20,23 @@ export const metadata: Metadata = {
 async function GetAllMemes() {
 	const { page, search } = searchParamsCache.all()
 
-	const data = await apiClient.get<MemeListResponse>(API_ROUTES.MEMES.LIST, {
+	const { data: memes, error } = await typedApiClient.GET("/memes/public", {
 		params: {
-			page,
-			pageSize: 30,
-			...(search && { search }),
+			query: {
+				limit: 30,
+				offset: ((page || 1) - 1) * 30,
+			},
 		},
 	})
 
-	const transformedData = await getImageDimensions(data, true)
-	return <MemesList initialData={transformedData} search={search} />
+	if (error || !memes) {
+		console.error("Error fetching memes:", error)
+		return <div className="p-4">Ошибка загрузки мемов</div>
+	}
+
+	const transformedData = MemesListDTO.fromApi(memes)
+
+	return <MemesList initialData={transformedData} search={search || ""} />
 }
 
 export default async function HomePage({
@@ -47,16 +53,24 @@ export default async function HomePage({
 		<div className="flex min-h-screen max-w-full flex-col">
 			<header className="bg-background sticky top-0 z-10 flex items-center gap-4 border-b p-2">
 				<SidebarTrigger className="size-12" />
-				<h2 className="text-xl font-bold">Memes</h2>
+				<h2 className="font-pixelify-sans text-2xl font-light">
+					Главная
+				</h2>
 				<SearchInput />
-				<Button>
-					<PlusCircle />
+				<Button className="" size={"icon"} asChild>
+					<Link href="/create">
+						<PlusCircle />
+					</Link>
 				</Button>
 			</header>
 			<main className="bg-background relative flex-1 overflow-hidden px-4">
 				<Suspense
 					key={suspenseKey}
-					fallback={<CardsSkeleton columns={4} />}
+					fallback={
+						<div className="mt-4">
+							<CardsSkeleton columns={4} />
+						</div>
+					}
 				>
 					<GetAllMemes />
 				</Suspense>

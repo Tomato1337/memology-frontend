@@ -53,11 +53,11 @@ export default function LoginPage() {
 			<div className="flex flex-1 items-center justify-center p-6 lg:justify-start lg:p-12">
 				<div className="w-full max-w-md space-y-8">
 					<div className="space-y-2 text-center">
-						<h1 className="font-pixelify-sans text-4xl font-bold">
+						<h1 className="font-pixelify text-4xl font-bold">
 							Welcome Back
 						</h1>
 						<p className="text-muted-foreground">
-							Log in to access your medical documents dashboard
+							Log in to access your meme dashboard
 						</p>
 					</div>
 

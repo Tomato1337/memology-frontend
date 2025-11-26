@@ -6,10 +6,9 @@ const nextConfig: NextConfig = {
 
 	images: {
 		remotePatterns: [
-			// !FIXME: ограничить список доменов
 			{
 				protocol: "https",
-				hostname: "**",
+				hostname: "memology.pixel-team.ru",
 			},
 		],
 		// ✅ Отключаем оптимизацию для dev режима (ускоряет разработку)
@@ -18,7 +17,6 @@ const nextConfig: NextConfig = {
 
 	// Прокси для API запросов (решает проблему с cookies в dev режиме)
 	async rewrites() {
-		// В production прокси не нужен - используем прямой URL бэкенда
 		if (process.env.NODE_ENV === "production") {
 			return []
 		}

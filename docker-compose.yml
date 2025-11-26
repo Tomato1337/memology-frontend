@@ -6,8 +6,7 @@ services:
             context: .
             dockerfile: Dockerfile
             args:
-                # URL бэкенда для сборки
-                NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://213.165.42.243:8082/api/v1}
+                NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://memology.pixel-team.ru/api/v1}
 
         image: ai-memes-frontend:latest
 
@@ -17,15 +16,13 @@ services:
             - "3030:3000"
 
         environment:
-            # Runtime переменные окружения
             - NODE_ENV=production
-            - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://213.165.42.243:8082/api/v1}
+            - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://memology.pixel-team.ru/api/v1}
             - NEXT_PUBLIC_API_MODE=${NEXT_PUBLIC_API_MODE:-real}
             - NEXT_PUBLIC_MSW_ENABLED=false
 
         restart: unless-stopped
 
-        # Healthcheck
         healthcheck:
             test:
                 [

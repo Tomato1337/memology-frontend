@@ -1,72 +1,85 @@
 "use client"
 
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
-	SidebarGroupLabel,
+	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/shared/ui/sidebar"
 import UserWidget from "./UserWidget"
+import ThemeToggle from "./ThemeToggle"
+import Link from "next/link"
+import {
+	ImageIcon,
+	LayoutDashboardIcon,
+	GalleryVerticalEndIcon,
+} from "lucide-react"
+import Logo from "@/shared/ui/logo"
 
-// Menu items configuration
-const MENU_ITEMS = [
+const navItems = [
 	{
-		title: "Home",
-		url: "#",
-		icon: Home,
+		title: "Главная",
+		url: "/",
+		icon: LayoutDashboardIcon,
 	},
 	{
-		title: "Inbox",
-		url: "#",
-		icon: Inbox,
+		title: "Создать мем",
+		url: "/create",
+		icon: ImageIcon,
 	},
 	{
-		title: "Calendar",
-		url: "#",
-		icon: Calendar,
-	},
-	{
-		title: "Search",
-		url: "#",
-		icon: Search,
-	},
-	{
-		title: "Settings",
-		url: "#",
-		icon: Settings,
+		title: "Галерея",
+		url: "/gallery",
+		icon: GalleryVerticalEndIcon,
 	},
 ]
 
 export function AppSidebar() {
 	return (
 		<Sidebar collapsible="icon">
+			<SidebarHeader className="">
+				<Link
+					href="/"
+					className="flex items-center gap-3 p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:py-4"
+				>
+					<Logo className="size-4 shrink-0 scale-150" />
+					<h1 className="font-pixelify-sans text-2xl transition-all group-data-[collapsible=icon]:hidden">
+						Memelogy
+					</h1>
+				</Link>
+				<div className="border-b-2 border-white/10" />
+			</SidebarHeader>
 			<SidebarContent>
 				<SidebarGroup>
-					<SidebarGroupLabel>Application</SidebarGroupLabel>
 					<SidebarGroupContent>
-						<SidebarMenu className="flex h-full flex-col justify-between">
-							<nav className="">
-								{MENU_ITEMS.map((item) => (
-									<SidebarMenuItem key={item.title}>
-										<SidebarMenuButton asChild>
-											<a href={item.url}>
-												<item.icon />
-												<span>{item.title}</span>
-											</a>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
-								))}
-							</nav>
-							<UserWidget />
+						<SidebarMenu>
+							{navItems.map((item) => (
+								<SidebarMenuItem key={item.title}>
+									<SidebarMenuButton asChild>
+										<Link href={item.url}>
+											<item.icon className="h-4 w-4" />
+											<span className="font-pixelify-sans text-lg font-light">
+												{item.title}
+											</span>
+										</Link>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							))}
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
+			<SidebarFooter>
+				<UserWidget />
+				<div className="flex w-full items-center justify-center">
+					<ThemeToggle />
+				</div>
+			</SidebarFooter>
 		</Sidebar>
 	)
 }

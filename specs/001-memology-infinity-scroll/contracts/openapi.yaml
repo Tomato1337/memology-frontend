@@ -1,6 +1,0 @@
-### DEPRECATED
-# This OpenAPI draft file is intentionally removed from use.
-# Canonical frontend contract lives in TypeScript types:
-#   src/shared/api/api-schema.d.ts
-# Do not edit or rely on this file. It remains only as a placeholder to avoid
-# accidental re-creation. Consider deleting the entire `contracts` directory if unused.

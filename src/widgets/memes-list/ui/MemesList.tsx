@@ -3,28 +3,24 @@
 import useIntersectionObserver from "@/shared/hooks/use-intersection-observer"
 import { apiClient } from "@/shared/api/client"
 import { API_ROUTES } from "@/shared/config/routes"
-import type { MemeListResponse } from "@/entities/meme/model/meme.types"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import Image from "next/image"
 import React, { useEffect, useRef } from "react"
 import CardsSkeleton from "@/widgets/memes-list/ui/cards-skeleton"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { getImageDimensions } from "@/shared/lib/utils"
 import { useElementSize } from "@/shared/hooks"
+import { MemeCard } from "./MemeCard"
+import { IMemeListDTO, MemesListDTO } from "@/entities/meme"
+import { MemeListResponse } from "@/entities/meme/model/types"
 
 interface MemesListProps {
-	initialData: MemeListResponse
+	initialData: IMemeListDTO
 	search: string
 }
 
-/**
- * MemesList Widget - displays infinite scrolling grid of memes
- * FSD Layer: widgets/memes-list
- * Composes: entities/meme, shared/ui, hooks
- */
 export function MemesList({ initialData, search }: MemesListProps) {
 	const { data, isFetching, isLoading, fetchNextPage, hasNextPage } =
-		useInfiniteQuery<MemeListResponse>({
+		useInfiniteQuery<IMemeListDTO>({
 			queryKey: ["memes", search],
 			queryFn: async (context) => {
 				const signal = context.signal
@@ -34,13 +30,13 @@ export function MemesList({ initialData, search }: MemesListProps) {
 					{
 						params: {
 							page: context.pageParam as number,
-							pageSize: 30,
+							limit: 30,
 							...(search && { search }),
 						},
 						signal,
 					},
 				)
-				const transformedData = await getImageDimensions(data)
+				const transformedData = MemesListDTO.fromApi(data)
 				return transformedData
 			},
 			initialData: {
@@ -50,7 +46,7 @@ export function MemesList({ initialData, search }: MemesListProps) {
 			initialPageParam: 1,
 			getNextPageParam: (lastPage, allPages) => {
 				const morePagesExist =
-					lastPage.page * lastPage.pageSize < lastPage.total
+					lastPage.page * lastPage.limit < lastPage.total
 				if (!morePagesExist) return undefined
 				return allPages.length + 1
 			},
@@ -134,36 +130,15 @@ export function MemesList({ initialData, search }: MemesListProps) {
 						GAP + virtualRow.lane * (columnWidth + GAP)
 
 					return (
-						<div
+						<MemeCard
+							virtualRow={virtualRow}
+							leftPosition={leftPosition}
+							columnWidth={columnWidth}
+							scaledHeight={scaledHeight}
+							GAP={GAP}
+							meme={meme}
 							key={virtualRow.index}
-							style={{
-								position: "absolute",
-								top: 0,
-								left: `${leftPosition}px`,
-								width: `${columnWidth}px`,
-								height: `${scaledHeight}px`,
-								transform: `translateY(${virtualRow.start}px)`,
-								padding: `0 0 ${GAP}px 0`,
-							}}
-							className="relative cursor-pointer overflow-hidden rounded-2xl shadow-md transition-shadow duration-300 hover:shadow-2xl"
-						>
-							<div className="h-full w-full">
-								<Image
-									src={meme.imageUrl}
-									alt={meme.title}
-									fill
-									sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-									className="object-cover transition-transform duration-300 hover:scale-105"
-									priority={virtualRow.index < 6}
-									loading={
-										virtualRow.index < 6
-											? undefined
-											: "lazy"
-									}
-									unoptimized
-								/>
-							</div>
-						</div>
+						/>
 					)
 				})}
 			</div>

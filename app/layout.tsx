@@ -25,10 +25,6 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode
 }>) {
-	if (process.env.NEXT_RUNTIME === "nodejs") {
-		const { server } = await import("@/shared/mocks/server")
-		server.listen({ onUnhandledRequest: "bypass" })
-	}
 	return (
 		<html lang="ru">
 			<head>
