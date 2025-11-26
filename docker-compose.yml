@@ -7,9 +7,6 @@ services:
             dockerfile: Dockerfile
             args:
                 NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://memology.pixel-team.ru/api/v1}
-
-        image: ai-memes-frontend:latest
-
         container_name: ai-memes-frontend
 
         ports:
@@ -18,8 +15,6 @@ services:
         environment:
             - NODE_ENV=production
             - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://memology.pixel-team.ru/api/v1}
-            - NEXT_PUBLIC_API_MODE=${NEXT_PUBLIC_API_MODE:-real}
-            - NEXT_PUBLIC_MSW_ENABLED=false
 
         restart: unless-stopped
 

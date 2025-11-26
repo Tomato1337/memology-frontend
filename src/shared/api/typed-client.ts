@@ -11,11 +11,11 @@
 
 import createClient, { type Middleware } from "openapi-fetch"
 import type { paths } from "./api-schema"
-import { BACKEND_URL } from "./config"
 import { redirect } from "next/navigation"
+import { env } from "../config/env"
 
 // Базовый URL API (для реального бэкенда)
-const API_BASE_URL = BACKEND_URL
+const API_BASE_URL = env.NEXT_PUBLIC_API_URL
 
 let isRefreshing = false
 let failedQueue: Array<{
