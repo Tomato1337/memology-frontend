@@ -23,6 +23,7 @@ export function SearchInput() {
 
 	return (
 		<Input
+			disabled
 			className="flex-1"
 			placeholder="Поиск мемов..."
 			value={viewSearch}
