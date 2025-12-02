@@ -1,175 +1,90 @@
-# AI Memes Frontend 🎭
+# AI Memes Frontend (Memology) 🎭
 
-Приложение для создания и обмена мемами, созданными с помощью ИИ. Построено на Next.js 15 с использованием MSW для API mocking и Faker.js для генерации тестовых данных.
+Фронтенд приложение для платформы генерации и обмена мемами с использованием ИИ. Разработано на современном стеке технологий с применением архитектуры Feature-Sliced Design.
 
-## 🚀 Быстрый старт
+## 🛠 Технологии
 
-```bash
-# Установка зависимостей
-npm install
+### Core
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Library**: [React 19](https://react.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
 
-# Запуск dev сервера
-npm run dev
-```
+### UI & Styling
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Components**: [Shadcn UI](https://ui.shadcn.com/) (Radix UI)
+- **Icons**: [Lucide React](https://lucide.dev/)
 
-Откройте [http://localhost:3000](http://localhost:3000) в браузере.
+### State & Data Management
+- **Server State**: [TanStack Query v5](https://tanstack.com/query/latest)
+- **URL State**: [Nuqs](https://nuqs.47ng.com/)
+- **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
 
-## ✨ Возможности
+### Architecture & Quality
+- **Architecture**: [Feature-Sliced Design (FSD)](https://feature-sliced.design/)
+- **Linting**: ESLint
+- **API Types**: [OpenAPI TypeScript](https://openapi-ts.pages.dev/)
 
-- ✅ **Типизированный API** - OpenAPI TypeScript схема с автогенерацией
-- ✅ **Гибридный режим** - Auth/Users на реальный бэкенд, остальное через MSW моки
-- ✅ **MSW (Mock Service Worker)** - Перехват и мокирование API запросов
-- ✅ **Faker.js** - Генерация реалистичных фейковых данных
-- ✅ **TypeScript** - Полная типизация
-- ✅ **React Query** - Умное кэширование и управление состоянием
-- ✅ **Next.js 15** - App Router, Server Components
-- ✅ **Tailwind CSS** - Стилизация
+## 📂 Структура проекта (FSD)
 
-## 📁 Структура проекта
+Проект строго следует методологии Feature-Sliced Design:
 
 ```
 src/
-├── app/                    # Next.js app router
-│   ├── layout.tsx         # Root layout с MSW provider
-│   └── page.tsx           # Главная страница
-├── shared/
-│   ├── api/               # 🎯 Типизированный API (OpenAPI)
-│   │   ├── typed-client.ts    # openapi-fetch клиент
-│   │   ├── auth.ts            # Auth API (реальный бэкенд)
-│   │   ├── users.ts           # Users API (реальный бэкенд)
-│   │   ├── hooks.ts           # React Query хуки
-│   │   ├── config.ts          # Гибридная конфигурация
-│   │   ├── api-schema.d.ts    # Автогенерируемые типы
-│   │   └── README.md          # Документация API
-│   ├── config/
-│   │   └── routes.ts      # API и app роуты
-│   ├── mocks/             # MSW конфигурация (только для мемов!)
-│   │   ├── browser.ts    # MSW worker setup
-│   │   └── handlers.ts   # API mock handlers
-│   └── types/
-│       └── meme.ts        # TypeScript типы
-├── entities/              # FSD: Бизнес сущности
-├── features/              # FSD: Пользовательские действия
-├── widgets/               # FSD: Композитные блоки
-└── pages/                 # FSD: Страницы
+├── app/          # Инициализация (провайдеры, глобальные стили, layout)
+├── pages/        # Страницы приложения (композиция виджетов)
+├── widgets/      # Крупные самостоятельные блоки (Header, Sidebar, Gallery)
+├── features/     # Обработка пользовательских сценариев (Auth, Like, Search)
+├── entities/     # Бизнес-сущности (User, Meme)
+└── shared/       # Переиспользуемые модули (UI-kit, API, конфиги, хуки)
 ```
 
-## 🔧 Технологии
+## 🚀 Запуск проекта
 
-- **Framework**: Next.js 15.5.4
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS 4
-- **Mocking**: MSW (Mock Service Worker)
-- **Fake Data**: Faker.js
-- **UI Components**: shadcn/ui (частично)
+### Предварительные требования
+- Node.js 20+
+- npm, yarn или [Bun](https://bun.sh/)
 
-## 📚 Документация
+### Локальный запуск
 
-### API (Типизированный, с OpenAPI)
+1. **Установите зависимости:**
+   ```bash
+   npm install
+   # или
+   bun install
+   ```
 
-- 📖 [API README](./src/shared/api/README.md) - Обзор
-- 🚀 [Быстрый старт](./src/shared/api/QUICKSTART.md) - Примеры использования
-- 📘 [Полный гайд](./src/shared/api/HYBRID_API_GUIDE.md) - Гибридный режим
-- 🏗️ [Архитектура](./src/shared/api/ARCHITECTURE.md) - Диаграммы и схемы
-- ✅ [Что готово](./src/shared/api/INTEGRATION_COMPLETE.md) - Статус интеграции
+2. **Запустите режим разработки:**
+   ```bash
+   npm run dev
+   # или
+   bun dev
+   ```
+   Приложение откроется на [http://localhost:3000](http://localhost:3000).
 
-### Остальное
-
-- 🎭 [MSW Setup](./MSW_SETUP.md) - Настройка Mock Service Worker
-
-### Быстрый пример использования API
-
-```typescript
-// ✅ Новый способ (типизированный, реальный бэкенд)
-import { useLogin, useRegister, useUserProfile } from '@/shared/api'
-
-function LoginForm() {
-  const { mutate: login, isPending } = useLogin()
-  
-  const handleSubmit = (credentials) => {
-    login(credentials, {
-      onSuccess: (auth) => console.log("Logged in!", auth.user)
-    })
-  }
-}
-
-function ProfilePage() {
-  const { data: user, isLoading } = useUserProfile()
-  
-  if (isLoading) return <div>Loading...</div>
-  return <div>Hello, {user?.username}</div>
-}
-
-// ⚠️ Старый способ (MSW моки, для мемов)
-import { getMemes } from '@/shared/api/memes';
-
-const memes = await getMemes({ page: 1, pageSize: 10 });
-```
-
-## 🎨 API эндпоинты
-
-### ✅ Реальный бэкенд (localhost:8080)
-- `POST /auth/login` - Вход
-- `POST /auth/register` - Регистрация
-- `POST /auth/logout` - Выход
-- `POST /auth/refresh` - Обновление токена
-- `GET /users/profile` - Профиль пользователя
-- `PUT /users/profile/update` - Обновление профиля
-- `GET /users/list` - Список пользователей
-- `POST /users/change-password` - Изменение пароля
-
-### 🎭 MSW Моки (localhost:3000)
-- `GET /api/memes` - Список мемов
-- `GET /api/memes/:id` - Мем по ID
-- `POST /api/memes` - Создать мем
-- `PATCH /api/memes/:id` - Обновить мем
-- `DELETE /api/memes/:id` - Удалить мем
-- `POST /api/memes/generate` - Генерация мема с AI
-
-## 🛠️ Скрипты
+### Запуск в Docker
 
 ```bash
-npm run dev            # Запуск dev сервера с Turbopack
-npm run build          # Сборка для production
-npm run start          # Запуск production сервера
-npm run lint           # Проверка кода с ESLint
-npm run generate:api   # Обновить OpenAPI схему с бэкенда
+docker-compose up --build
 ```
 
-## ⚙️ Конфигурация
+## 📜 Доступные скрипты
 
-Скопируйте `.env.example` в `.env.local`:
+- `npm run dev` — Запуск сервера разработки.
+- `npm run build` — Сборка приложения для продакшена.
+- `npm run start` — Запуск собранного приложения.
+- `npm run lint` — Проверка кода линтером.
+- `npm run generate:api` — Генерация TypeScript типов на основе удаленной OpenAPI схемы.
+- `npm run generate:api:file` — Генерация типов из локального `openapi.yaml`.
 
-```bash
-cp .env.example .env.local
-```
+## 🌐 Переменные окружения
 
-Основные переменные:
+Основные переменные окружения (можно настроить в `.env` или `.env.local`):
 
-```env
-# URL реального бэкенда
-NEXT_PUBLIC_API_URL=http://localhost:8080
+| Переменная | Описание | Дефолтное значение |
+|------------|----------|--------------------|
+| `NEXT_PUBLIC_API_URL` | URL API бэкенда | `https://memology.pixel-team.ru/api/v1` |
 
-# Режим: hybrid (рекомендуется) | mock | real
-NEXT_PUBLIC_API_MODE=hybrid
+## 🔗 Бэкенд
 
-# Включить MSW моки
-NEXT_PUBLIC_MSW_ENABLED=true
-```
-
-## 📖 Дополнительно
-
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-### Полезные ресурсы
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [MSW Documentation](https://mswjs.io/)
-- [Faker.js Documentation](https://fakerjs.dev/)
-- [Tailwind CSS](https://tailwindcss.com/)
-
-## 🚢 Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Бэкенд часть проекта написана на Go и находится в директории `memology-backend/`.
+Подробнее см. [README бэкенда](./memology-backend/README.md).
