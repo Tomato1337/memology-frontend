@@ -61,7 +61,7 @@ export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent
-				className="max-h-[90vh] max-w-4xl gap-2 overflow-hidden p-0"
+				className="max-h-[90vh] w-auto max-w-[90vw] min-w-[25vw] gap-2 overflow-y-auto p-0"
 				showCloseButton={false}
 			>
 				<VisuallyHidden>
@@ -87,14 +87,11 @@ export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 							</p>
 						</div>
 					) : meme.imageUrl && !imageError ? (
-						<Image
+						<img
 							src={meme.imageUrl}
 							alt={meme.title || "Meme"}
-							width={1200}
-							height={1200}
-							className="max-h-[70vh] w-auto object-contain"
+							className="max-h-[70vh] max-w-full object-contain"
 							onError={() => setImageError(true)}
-							priority
 						/>
 					) : (
 						<div className="bg-muted flex h-[50vh] w-full flex-col items-center justify-center gap-2">
