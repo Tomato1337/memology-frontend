@@ -5,14 +5,15 @@ import { apiClient } from "@/shared/api/client"
 import { API_ROUTES } from "@/shared/config/routes"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import Image from "next/image"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import CardsSkeleton from "@/widgets/memes-list/ui/cards-skeleton"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { useElementSize } from "@/shared/hooks"
 import { MemeCard } from "./MemeCard"
-import { IMemeListDTO, MemesListDTO } from "@/entities/meme"
+import { IMemeDTO, IMemeListDTO, MemesListDTO } from "@/entities/meme"
 import { MemeListResponse } from "@/entities/meme/model/types"
 import { FrownIcon } from "lucide-react"
+import { ImageViewer } from "@/entities/meme/ui/ImageViewer"
 
 interface MemesListProps {
 	initialData: IMemeListDTO
@@ -20,6 +21,7 @@ interface MemesListProps {
 }
 
 export function MemesList({ initialData, search }: MemesListProps) {
+	const [selectedMeme, setSelectedMeme] = useState<IMemeDTO | null>(null)
 	const { data, isFetching, isLoading, fetchNextPage, hasNextPage } =
 		useInfiniteQuery<IMemeListDTO>({
 			queryKey: ["memes", search],
@@ -151,6 +153,7 @@ export function MemesList({ initialData, search }: MemesListProps) {
 							GAP={GAP}
 							meme={meme}
 							key={virtualRow.index}
+							onClick={() => setSelectedMeme(meme)}
 						/>
 					)
 				})}
@@ -162,6 +165,12 @@ export function MemesList({ initialData, search }: MemesListProps) {
 				</div>
 			)}
 			<div className="h-1 w-full" ref={dividerForInfScroll}></div>
+
+			<ImageViewer
+				meme={selectedMeme}
+				open={!!selectedMeme}
+				onOpenChange={(open) => !open && setSelectedMeme(null)}
+			/>
 		</div>
 	)
 }

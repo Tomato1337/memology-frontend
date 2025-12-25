@@ -3,7 +3,7 @@ import { useGetUser } from "@/entities/user/api/useGetUser"
 import { cn } from "@/shared/lib/utils"
 import { AvatarFallback, AvatarImage, Avatar } from "@/shared/ui/avatar"
 import { Button } from "@/shared/ui/button"
-import { FrownIcon, Heart } from "lucide-react"
+import { FrownIcon, Heart, Loader2Icon } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
 
@@ -56,6 +56,15 @@ export const MemeCard = ({
 						loading={virtualRow.index < 6 ? undefined : "lazy"}
 						onError={() => setImageError(true)}
 					/>
+				</div>
+			) : meme.status === "pending" ||
+			  meme.status === "started" ||
+			  meme.status === "processing" ? (
+				<div className="flex h-full w-full flex-col items-center justify-center">
+					<Loader2Icon className="text-muted-foreground size-12 animate-spin" />
+					<p className="text-muted-foreground font-montserrat text-sm">
+						Генерация...
+					</p>
 				</div>
 			) : (
 				<div className="flex h-full w-full flex-col items-center justify-center">
