@@ -5,6 +5,7 @@ import { ru } from "date-fns/locale"
 import { Badge } from "@/shared/ui/badge"
 import { IMemeDTO } from "../model/types"
 import { Loader2Icon } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 
 interface MemeCardProps {
 	meme: IMemeDTO

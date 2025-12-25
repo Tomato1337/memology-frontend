@@ -15,7 +15,7 @@ import { ru } from "date-fns/locale"
 import { Badge } from "@/shared/ui/badge"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useEffect, useState } from "react"
-import { cn } from "@/shared/lib/utils"
+import { Avatar, AvatarFallback } from "@/shared/ui/avatar"
 
 interface ImageViewerProps {
 	meme: IMemeDTO | null
@@ -24,8 +24,15 @@ interface ImageViewerProps {
 }
 
 export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
-	if (!meme) return null
 	const [imageError, setImageError] = useState(false)
+
+	useEffect(() => {
+		if (open) {
+			setImageError(false)
+		}
+	}, [open, meme])
+
+	if (!meme) return null
 
 	const handleDownload = async () => {
 		if (!meme.imageUrl) return
@@ -46,12 +53,22 @@ export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 		}
 	}
 
+	const isProcessing =
+		meme.status === "pending" ||
+		meme.status === "started" ||
+		meme.status === "processing"
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent
 				className="max-h-[90vh] max-w-4xl gap-2 overflow-hidden p-0"
 				showCloseButton={false}
 			>
+				<VisuallyHidden>
+					<DialogTitle>{meme.title || "Мем"}</DialogTitle>
+					<DialogDescription>Просмотр мема</DialogDescription>
+				</VisuallyHidden>
+
 				<Button
 					variant="ghost"
 					size="icon"
@@ -61,16 +78,10 @@ export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 					<X className="size-4" />
 				</Button>
 
-				<div
-					className={cn(
-						"relative flex items-center justify-center bg-black",
-					)}
-				>
-					{meme.status === "pending" ||
-					meme.status === "started" ||
-					meme.status === "processing" ? (
+				<div className="bg-accent flex w-full items-center justify-center">
+					{isProcessing ? (
 						<div className="bg-muted flex h-[50vh] w-full flex-col items-center justify-center gap-2">
-							<Loader2Icon className="text-muted-foreground size-18 animate-spin" />
+							<Loader2Icon className="text-muted-foreground size-12 animate-spin" />
 							<p className="text-muted-foreground font-montserrat text-xl">
 								Генерация...
 							</p>
@@ -86,7 +97,7 @@ export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 							priority
 						/>
 					) : (
-						<div className="flex h-[50vh] w-full flex-col items-center justify-center gap-2">
+						<div className="bg-muted flex h-[50vh] w-full flex-col items-center justify-center gap-2">
 							<FrownIcon className="text-muted-foreground size-32" />
 							<p className="text-muted-foreground font-montserrat text-xl">
 								Изображение не доступно
@@ -96,7 +107,12 @@ export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 				</div>
 
 				<div className="flex items-center justify-between gap-4 p-4">
-					<div className="flex flex-col gap-1">
+					<Avatar>
+						<AvatarFallback>
+							{meme.author.slice(0, 2)}
+						</AvatarFallback>
+					</Avatar>
+					<div className="flex flex-2 flex-col gap-1">
 						<p className="font-montserrat text-sm font-medium">
 							{meme.title || "Без текста"}
 						</p>
@@ -110,12 +126,12 @@ export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 									},
 								)}
 							</p>
-							{meme.style && (
-								<Badge variant="outline" className="text-xs">
-									{meme.style}
-								</Badge>
-							)}
 						</div>
+						{meme.style && (
+							<Badge variant="outline" className="w-fit text-xs">
+								{meme.style}
+							</Badge>
+						)}
 					</div>
 
 					<Button

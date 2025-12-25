@@ -32,7 +32,7 @@ async function GetAllMemes() {
 
 	if (error || !memes) {
 		console.error("Error fetching memes:", error)
-		return <div className="p-4">Ошибка загрузки мемов</div>
+		throw "Ошибка загрузки мемов"
 	}
 
 	const transformedData = MemesListDTO.fromApi(memes)
