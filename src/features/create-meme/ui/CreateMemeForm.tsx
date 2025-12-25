@@ -1,11 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useGenerateMeme } from "../model/mutations"
-import { createMemeSchema, type CreateMemeFormData } from "../model/schema"
-import { useMemeStyles, useMemeStatus, memeKeys } from "@/entities/meme"
+import {
+	createMemeSchema,
+	type CreateMemeFormData,
+	GenerationModel,
+} from "../model/schema"
+import { useMemeStyles, usePendingMemes, memeKeys } from "@/entities/meme"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
@@ -20,12 +24,43 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Checkbox } from "@/shared/ui/checkbox"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
-import Image from "next/image"
 import { useQueryClient } from "@tanstack/react-query"
 
 export function CreateMemeForm() {
-	const [generatedMemeId, setGeneratedMemeId] = useState<string | null>(null)
+	const [pendingMemeIds, setPendingMemeIds] = useState<string[]>([])
 	const queryClient = useQueryClient()
+
+	// Track which memes we've already shown notifications for
+	const notifiedMemeIds = useRef<Set<string>>(new Set())
+
+	const PENDING_MEME_IDS_KEY = "pending_meme_ids"
+
+	// Restore pending IDs from localStorage on mount
+	useEffect(() => {
+		try {
+			const saved = localStorage.getItem(PENDING_MEME_IDS_KEY)
+			if (saved) {
+				const ids = JSON.parse(saved)
+				if (Array.isArray(ids) && ids.length > 0) {
+					setPendingMemeIds(ids)
+				}
+			}
+		} catch {
+			// Invalid JSON, ignore
+		}
+	}, [])
+
+	// Save to localStorage when pending IDs change
+	useEffect(() => {
+		if (pendingMemeIds.length > 0) {
+			localStorage.setItem(
+				PENDING_MEME_IDS_KEY,
+				JSON.stringify(pendingMemeIds),
+			)
+		} else {
+			localStorage.removeItem(PENDING_MEME_IDS_KEY)
+		}
+	}, [pendingMemeIds])
 
 	// Fetches
 	const { data: styles, isLoading: stylesLoading } = useMemeStyles()
@@ -33,40 +68,32 @@ export function CreateMemeForm() {
 	// Mutations
 	const { mutate: generate, isPending: isGenerating } = useGenerateMeme()
 
-	const MEME_GENERATION_ID_KEY = "meme_generation_id"
+	// Poll all pending memes status
+	const pendingMemesQueries = usePendingMemes(pendingMemeIds)
 
-	// Restore from localStorage on mount
+	// Handle completed/failed memes
 	useEffect(() => {
-		const savedId = localStorage.getItem(MEME_GENERATION_ID_KEY)
-		if (savedId) {
-			setGeneratedMemeId(savedId)
-		}
-	}, [])
+		pendingMemesQueries.forEach((query, index) => {
+			const meme = query.data
+			const memeId = pendingMemeIds[index]
 
-	// Save to localStorage when ID changes
-	useEffect(() => {
-		if (generatedMemeId) {
-			localStorage.setItem(MEME_GENERATION_ID_KEY, generatedMemeId)
-		} else {
-			localStorage.removeItem(MEME_GENERATION_ID_KEY)
-		}
-	}, [generatedMemeId])
+			if (!meme || !memeId) return
+			if (notifiedMemeIds.current.has(memeId)) return
 
-	// Status polling (only when meme is generated)
-	const {
-		data: generatedMeme,
-		isLoading: isPolling,
-		isError: isPollingError,
-	} = useMemeStatus(generatedMemeId || "", !!generatedMemeId)
-
-	// Handle polling errors (e.g. 404 if ID is invalid/expired)
-	useEffect(() => {
-		if (isPollingError) {
-			setGeneratedMemeId(null)
-			localStorage.removeItem(MEME_GENERATION_ID_KEY)
-			toast.error("Не удалось восстановить статус генерации")
-		}
-	}, [isPollingError])
+			if (meme.status === "completed") {
+				notifiedMemeIds.current.add(memeId)
+				toast.success("Мем успешно создан!")
+				setPendingMemeIds((prev) => prev.filter((id) => id !== memeId))
+				queryClient.invalidateQueries({
+					queryKey: memeKeys.my(),
+				})
+			} else if (meme.status === "failed") {
+				notifiedMemeIds.current.add(memeId)
+				toast.error("Ошибка при генерации мема")
+				setPendingMemeIds((prev) => prev.filter((id) => id !== memeId))
+			}
+		})
+	}, [pendingMemesQueries, pendingMemeIds, queryClient])
 
 	// React Hook Form
 	const {
@@ -75,18 +102,19 @@ export function CreateMemeForm() {
 		setValue,
 		watch,
 		formState: { errors },
-		reset,
 	} = useForm<CreateMemeFormData>({
 		resolver: zodResolver(createMemeSchema),
 		defaultValues: {
 			prompt: "",
 			style: undefined,
 			is_public: true,
+			generationModel: GenerationModel.AI,
 		},
 	})
 
 	const selectedStyle = watch("style")
 	const isPublic = watch("is_public")
+	const selectedModel = watch("generationModel")
 
 	// Submit handler
 	const onSubmit = (data: CreateMemeFormData) => {
@@ -98,30 +126,15 @@ export function CreateMemeForm() {
 		generate(payload, {
 			onSuccess: (meme) => {
 				toast.success("Генерация начата!")
-				setGeneratedMemeId(meme.id || null)
+				if (meme.id) {
+					setPendingMemeIds((prev) => [...prev, meme.id!])
+				}
 			},
 			onError: (error) => {
 				toast.error("Ошибка генерации: " + error.message)
 			},
 		})
 	}
-
-	// Reset when meme is completed
-	useEffect(() => {
-		if (generatedMeme?.status === "completed") {
-			toast.success("Мем успешно создан!")
-			setGeneratedMemeId(null)
-			queryClient.invalidateQueries({
-				queryKey: memeKeys.my(),
-			})
-			reset()
-		} else if (generatedMeme?.status === "failed") {
-			toast.error("Ошибка при генерации мема")
-			setGeneratedMemeId(null)
-		}
-	}, [generatedMeme?.status, reset, queryClient])
-
-	const isLoading = isGenerating || isPolling
 
 	return (
 		<Card className="w-full">
@@ -133,7 +146,7 @@ export function CreateMemeForm() {
 							id="prompt"
 							{...register("prompt")}
 							placeholder="Введите текст для мема..."
-							disabled={isLoading}
+							disabled={isGenerating}
 							className="font-montserrat"
 						/>
 						{errors.prompt && (
@@ -144,24 +157,51 @@ export function CreateMemeForm() {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="style">Стиль (опционально)</Label>
+						<Label htmlFor="generationModel">
+							Модель генерации
+						</Label>
 						<Select
-							value={selectedStyle}
-							onValueChange={(value) => setValue("style", value)}
-							disabled={isLoading || stylesLoading}
+							value={selectedModel}
+							onValueChange={(value: "ai" | "template") =>
+								setValue("generationModel", value)
+							}
+							disabled={isGenerating}
 						>
-							<SelectTrigger id="style">
-								<SelectValue placeholder="Выберите стиль" />
+							<SelectTrigger id="generationModel">
+								<SelectValue placeholder="Выберите модель" />
 							</SelectTrigger>
 							<SelectContent>
-								{styles?.map((style) => (
-									<SelectItem key={style} value={style}>
-										{style}
-									</SelectItem>
-								))}
+								<SelectItem value="ai">AI генерация</SelectItem>
+								<SelectItem value="template">
+									Шаблоны
+								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
+
+					{selectedModel === GenerationModel.AI && (
+						<div className="space-y-2">
+							<Label htmlFor="style">Стиль (опционально)</Label>
+							<Select
+								value={selectedStyle}
+								onValueChange={(value) =>
+									setValue("style", value)
+								}
+								disabled={isGenerating || stylesLoading}
+							>
+								<SelectTrigger id="style">
+									<SelectValue placeholder="Выберите стиль" />
+								</SelectTrigger>
+								<SelectContent>
+									{styles?.map((style) => (
+										<SelectItem key={style} value={style}>
+											{style}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
 
 					<div className="flex items-center space-x-2">
 						<Checkbox
@@ -170,7 +210,7 @@ export function CreateMemeForm() {
 							onCheckedChange={(checked) =>
 								setValue("is_public", Boolean(checked))
 							}
-							disabled={isLoading}
+							disabled={isGenerating}
 						/>
 						<Label
 							htmlFor="is_public"
@@ -182,36 +222,18 @@ export function CreateMemeForm() {
 
 					<Button
 						type="submit"
-						disabled={isLoading || !!generatedMemeId}
+						disabled={isGenerating}
 						className="font-pixelify w-full cursor-pointer"
 					>
-						{isLoading ? (
+						{isGenerating ? (
 							<>
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								{isPolling ? "Создаём мем..." : "Отправка..."}
+								Отправка...
 							</>
 						) : (
 							"Создать мем"
 						)}
 					</Button>
-
-					{generatedMeme &&
-						generatedMeme.image_url &&
-						generatedMeme.status === "completed" && (
-							<div className="mt-6 space-y-4">
-								<h3 className="font-pixelify text-lg">
-									Результат:
-								</h3>
-								<div className="relative aspect-square w-full overflow-hidden rounded-lg border">
-									<Image
-										src={generatedMeme.image_url}
-										alt="Сгенерированный мем"
-										fill
-										className="object-cover"
-									/>
-								</div>
-							</div>
-						)}
 				</form>
 			</CardContent>
 		</Card>

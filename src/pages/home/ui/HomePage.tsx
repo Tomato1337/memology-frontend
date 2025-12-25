@@ -25,6 +25,7 @@ async function GetAllMemes() {
 			query: {
 				limit: 30,
 				offset: ((page || 1) - 1) * 30,
+				search: search || undefined,
 			},
 		},
 	})

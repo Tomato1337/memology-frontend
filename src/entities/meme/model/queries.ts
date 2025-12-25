@@ -1,4 +1,4 @@
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query"
+import { useQuery, useInfiniteQuery, useQueries } from "@tanstack/react-query"
 import {
 	getMyMemes,
 	getMemeStatus,
@@ -56,5 +56,24 @@ export function useMemeStatus(id: string, enabled = false) {
 			}
 			return 2000 // Poll every 2s
 		},
+	})
+}
+
+export function usePendingMemes(ids: string[]) {
+	return useQueries({
+		queries: ids.map((id) => ({
+			queryKey: memeKeys.status(id),
+			queryFn: () => getMemeStatus(id),
+			enabled: !!id,
+			refetchInterval: (query: {
+				state: { data: { status?: string } | undefined }
+			}) => {
+				const meme = query.state.data
+				if (meme?.status === "completed" || meme?.status === "failed") {
+					return false
+				}
+				return 5000
+			},
+		})),
 	})
 }

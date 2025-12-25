@@ -1,5 +1,3 @@
-"use client"
-
 import { CreateMemeForm } from "@/features/create-meme"
 import { MemeGallery } from "@/widgets/meme-gallery"
 import { SidebarTrigger } from "@/shared/ui/sidebar"
@@ -7,8 +5,10 @@ import { Button } from "@/shared/ui/button"
 import { PlusCircle } from "lucide-react"
 import Link from "next/link"
 import { SearchInput } from "@/features/search-memes"
+import { requireAuth } from "@/shared/lib/auth"
 
-export default function CreateMemePage() {
+export default async function CreateMemePage() {
+	await requireAuth("/create")
 	return (
 		<div className="bg-background min-h-screen">
 			<header className="bg-background sticky top-0 z-10 flex items-center gap-4 border-b p-2">

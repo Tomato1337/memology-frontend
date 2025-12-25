@@ -396,6 +396,77 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/memes/generate-template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate template meme
+         * @description Generate meme using memegen.link API with random template selection and LLM-powered captions. Returns URL to the generated meme immediately (synchronous).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Template meme generation request */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["services.CreateTemplateMemeRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["models.Meme"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["handlers.ErrorResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["handlers.ErrorResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["handlers.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/memes/my": {
         parameters: {
             query?: never;
@@ -405,7 +476,7 @@ export interface paths {
         };
         /**
          * Get user memes
-         * @description Get list of memes created by current user with pagination
+         * @description Get list of memes created by current user with pagination and optional search
          */
         get: {
             parameters: {
@@ -414,6 +485,8 @@ export interface paths {
                     page?: number;
                     /** @description Items per page */
                     limit?: number;
+                    /** @description Search by prompt */
+                    search?: string;
                 };
                 header?: never;
                 path?: never;
@@ -458,7 +531,7 @@ export interface paths {
         };
         /**
          * Get public memes
-         * @description Get paginated list of public memes
+         * @description Get paginated list of public memes with optional search
          */
         get: {
             parameters: {
@@ -467,6 +540,8 @@ export interface paths {
                     page?: number;
                     /** @description Items per page */
                     limit?: number;
+                    /** @description Search by prompt */
+                    search?: string;
                 };
                 header?: never;
                 path?: never;
@@ -481,135 +556,6 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["handlers.MemeHistoryResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/memes/search/private": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Search private memes
-         * @description Search memes created by the authorized user by query string
-         */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Search query */
-                    q: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["models.Meme"][];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["handlers.ErrorResponse"];
-                    };
-                };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["handlers.ErrorResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["handlers.ErrorResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/memes/search/public": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Search public memes
-         * @description Search memes among public ones by query string
-         */
-        get: {
-            parameters: {
-                query: {
-                    /** @description Search query */
-                    q: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["models.Meme"][];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["handlers.ErrorResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["handlers.ErrorResponse"];
                     };
                 };
             };
@@ -1277,6 +1223,16 @@ export interface components {
             prompt: string;
             /** @example anime */
             style?: string;
+        };
+        "services.CreateTemplateMemeRequest": {
+            /** @example Кот пьет кофе */
+            context: string;
+            /** @example 512 */
+            height?: number;
+            /** @example true */
+            is_public?: boolean;
+            /** @example 512 */
+            width?: number;
         };
         "services.LoginRequest": {
             /** @example password123 */

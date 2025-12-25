@@ -2,6 +2,7 @@ export {
 	useMyMemesInfinite,
 	useMemeStyles,
 	useMemeStatus,
+	usePendingMemes,
 	memeKeys,
 } from "./model/queries"
 export type {

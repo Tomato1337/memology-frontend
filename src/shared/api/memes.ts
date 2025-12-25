@@ -51,6 +51,27 @@ export async function generateMeme(params: {
 }
 
 /**
+ * Генерация мема через шаблоны memegen.link
+ */
+export async function generateTemplateMeme(params: {
+	context: string
+	height?: number
+	width?: number
+	is_public?: boolean
+}) {
+	const { data, error } = await typedApiClient.POST(
+		"/memes/generate-template",
+		{
+			body: params,
+		},
+	)
+
+	if (error)
+		throw new Error(error.error || "Failed to generate template meme")
+	return data
+}
+
+/**
  * Проверить статус генерации мема
  */
 export async function getMemeStatus(id: string) {

@@ -12,6 +12,7 @@ import { useElementSize } from "@/shared/hooks"
 import { MemeCard } from "./MemeCard"
 import { IMemeListDTO, MemesListDTO } from "@/entities/meme"
 import { MemeListResponse } from "@/entities/meme/model/types"
+import { FrownIcon } from "lucide-react"
 
 interface MemesListProps {
 	initialData: IMemeListDTO
@@ -101,6 +102,18 @@ export function MemesList({ initialData, search }: MemesListProps) {
 	React.useEffect(() => {
 		rowVirtualizer.measure()
 	}, [LANES, delayWindowSize, rowVirtualizer])
+
+	if (initialData.data.length === 0) {
+		return (
+			<div
+				className="flex w-full flex-col items-center justify-center gap-2"
+				style={{ height: "calc(100vh - 65px)" }}
+			>
+				<FrownIcon className="size-32" />
+				<p className="text-center text-lg">Ничего не найдено</p>
+			</div>
+		)
+	}
 
 	if (isFetching && !data) {
 		return <CardsSkeleton />
