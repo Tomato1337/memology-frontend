@@ -53,7 +53,7 @@ export function MemeGallery({
 				<CardContent className="h-full p-0">
 					<ScrollArea className="h-full rounded-lg px-6">
 						{isLoading ? (
-							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+							<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 								{Array.from({ length: 6 }).map((_, i) => (
 									<Skeleton
 										key={i}
@@ -97,7 +97,7 @@ export function MemeGallery({
 
 								{/* Loading indicator */}
 								{isFetchingNextPage && (
-									<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+									<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 										{Array.from({ length: 4 }).map(
 											(_, i) => (
 												<Skeleton

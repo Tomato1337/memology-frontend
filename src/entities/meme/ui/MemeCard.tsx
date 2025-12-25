@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns"
 import { ru } from "date-fns/locale"
 import { Badge } from "@/shared/ui/badge"
 import { IMemeDTO } from "../model/types"
+import { Loader2Icon } from "lucide-react"
 
 interface MemeCardProps {
 	meme: IMemeDTO
@@ -19,7 +20,7 @@ export function MemeCard({ meme, onClick }: MemeCardProps) {
 
 	return (
 		<Card
-			className="cursor-pointer overflow-hidden transition-shadow hover:shadow-lg"
+			className="cursor-pointer gap-2 overflow-hidden p-0 transition-shadow hover:shadow-lg"
 			onClick={() => onClick?.(meme)}
 		>
 			<CardContent className="relative aspect-square p-0">
@@ -32,10 +33,23 @@ export function MemeCard({ meme, onClick }: MemeCardProps) {
 						sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 					/>
 				) : (
-					<div className="bg-muted flex h-full w-full items-center justify-center">
-						<Badge variant={isFailed ? "destructive" : "secondary"}>
-							{isProcessing ? "Генерация..." : "Ошибка"}
-						</Badge>
+					<div className="bg-muted flex h-full w-full flex-col items-center justify-center">
+						{meme.status === "pending" ||
+						meme.status === "started" ||
+						meme.status === "processing" ? (
+							<>
+								<Loader2Icon className="text-muted-foreground size-12 animate-spin" />
+								<p className="text-muted-foreground font-montserrat text-md">
+									Генерация...
+								</p>
+							</>
+						) : (
+							<Badge
+								variant={isFailed ? "destructive" : "secondary"}
+							>
+								{isProcessing ? "Генерация..." : "Ошибка"}
+							</Badge>
+						)}
 					</div>
 				)}
 			</CardContent>

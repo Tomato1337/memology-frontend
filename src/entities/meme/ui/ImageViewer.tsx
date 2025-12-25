@@ -14,6 +14,8 @@ import { formatDistanceToNow } from "date-fns"
 import { ru } from "date-fns/locale"
 import { Badge } from "@/shared/ui/badge"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import { useEffect, useState } from "react"
+import { cn } from "@/shared/lib/utils"
 
 interface ImageViewerProps {
 	meme: IMemeDTO | null
@@ -23,6 +25,7 @@ interface ImageViewerProps {
 
 export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 	if (!meme) return null
+	const [imageError, setImageError] = useState(false)
 
 	const handleDownload = async () => {
 		if (!meme.imageUrl) return
@@ -46,7 +49,7 @@ export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent
-				className="max-h-[90vh] max-w-4xl overflow-hidden p-0"
+				className="max-h-[90vh] max-w-4xl gap-2 overflow-hidden p-0"
 				showCloseButton={false}
 			>
 				<Button
@@ -58,23 +61,28 @@ export function ImageViewer({ meme, open, onOpenChange }: ImageViewerProps) {
 					<X className="size-4" />
 				</Button>
 
-				<div className="relative flex items-center justify-center bg-black">
+				<div
+					className={cn(
+						"relative flex items-center justify-center bg-black",
+					)}
+				>
 					{meme.status === "pending" ||
 					meme.status === "started" ||
 					meme.status === "processing" ? (
-						<div className="flex h-[50vh] w-full flex-col items-center justify-center gap-2">
-							<Loader2Icon className="text-muted-foreground size-24 animate-spin" />
+						<div className="bg-muted flex h-[50vh] w-full flex-col items-center justify-center gap-2">
+							<Loader2Icon className="text-muted-foreground size-18 animate-spin" />
 							<p className="text-muted-foreground font-montserrat text-xl">
 								Генерация...
 							</p>
 						</div>
-					) : meme.imageUrl ? (
+					) : meme.imageUrl && !imageError ? (
 						<Image
 							src={meme.imageUrl}
 							alt={meme.title || "Meme"}
 							width={1200}
 							height={1200}
 							className="max-h-[70vh] w-auto object-contain"
+							onError={() => setImageError(true)}
 							priority
 						/>
 					) : (
