@@ -86,5 +86,4 @@ docker-compose up --build
 
 ## 🔗 Бэкенд
 
-Бэкенд часть проекта написана на Go и находится в директории `memology-backend/`.
-Подробнее см. [README бэкенда](./memology-backend/README.md).
+Бэкенд часть проекта написана на Go по ссылке [https://github.com/lDizil/memology-backend](https://github.com/lDizil/memology-backend).
